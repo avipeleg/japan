@@ -4,87 +4,101 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="theme-color" content="#b91c1c">
-<title>Japan Trip · 22 Days</title>
+<title>Japan Trip · August 2026</title>
 <style>
   :root{
     --red:#b91c1c; --red-dark:#7f1d1d; --ink:#1f2937; --muted:#6b7280;
     --bg:#f5f5f4; --card:#ffffff; --line:#e7e5e4; --accent:#0e7490;
-    --chip:#f3f4f6;
+    --trip:#fee2e2; --trip-line:#fca5a5; --today:#0e7490; --chip:#f3f4f6;
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
   html,body{margin:0;padding:0;}
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    background:var(--bg); color:var(--ink); line-height:1.45; font-size:16px;
-    padding-bottom:96px;
+    background:var(--bg); color:var(--ink); line-height:1.4; font-size:16px;
+    padding-bottom:90px;
   }
   header{
     position:sticky; top:0; z-index:20;
     background:linear-gradient(135deg,var(--red),var(--red-dark));
-    color:#fff; padding:16px 16px 12px; box-shadow:0 2px 10px rgba(0,0,0,.15);
+    color:#fff; padding:14px 14px 10px; box-shadow:0 2px 10px rgba(0,0,0,.15);
   }
-  header h1{margin:0; font-size:19px; font-weight:700; letter-spacing:.2px;}
-  header .sub{font-size:12.5px; opacity:.9; margin-top:2px;}
-  .toolbar{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
-  .toolbar button{
-    flex:1 1 auto; min-width:0; border:none; border-radius:10px; padding:9px 8px;
-    font-size:13px; font-weight:600; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;
-  }
+  .month-nav{display:flex; align-items:center; justify-content:space-between;}
+  .month-nav h1{margin:0; font-size:19px; font-weight:700;}
+  .month-nav button{background:rgba(255,255,255,.16); border:none; color:#fff;
+    width:36px; height:36px; border-radius:10px; font-size:18px; cursor:pointer;}
+  .month-nav button:active{transform:scale(.95);}
+  .sub{font-size:12px; opacity:.9; margin-top:4px; text-align:center;}
+  .toolbar{display:flex; gap:7px; margin-top:10px;}
+  .toolbar button{flex:1; border:none; border-radius:9px; padding:8px 4px;
+    font-size:12px; font-weight:600; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;}
   .toolbar button:active{transform:scale(.97);}
-  main{max-width:760px; margin:0 auto; padding:14px 12px;}
-  .day{
-    background:var(--card); border:1px solid var(--line); border-radius:14px;
-    margin-bottom:14px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,.05);
-  }
-  .day-head{
-    display:flex; align-items:center; gap:10px; padding:12px 14px; cursor:pointer;
-    background:#fff;
-  }
-  .day-num{
-    flex:0 0 auto; width:40px; height:40px; border-radius:10px;
-    background:var(--red); color:#fff; display:flex; align-items:center; justify-content:center;
-    font-weight:700; font-size:15px;
-  }
-  .day-meta{flex:1 1 auto; min-width:0;}
-  .day-loc{font-weight:700; font-size:15.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .day-date{font-size:12.5px; color:var(--muted); margin-top:1px;}
-  .chev{flex:0 0 auto; color:var(--muted); transition:transform .2s; font-size:13px;}
-  .day.open .chev{transform:rotate(180deg);}
-  .day-body{display:none; padding:4px 14px 16px; border-top:1px solid var(--line);}
-  .day.open .day-body{display:block;}
 
-  .field{margin-top:12px;}
+  main{max-width:820px; margin:0 auto; padding:12px 8px;}
+  .weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:5px;}
+  .weekdays div{text-align:center; font-size:11px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.4px;}
+  .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cell{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    min-height:74px; padding:5px 5px 4px; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; font-size:11px;
+  }
+  .cell.blank{background:transparent; border:none;}
+  .cell .dnum{font-size:12.5px; font-weight:700; color:var(--muted); line-height:1;}
+  .cell.trip{background:var(--trip); border-color:var(--trip-line); cursor:pointer;}
+  .cell.trip .dnum{color:var(--red-dark);}
+  .cell.trip:active{transform:scale(.97);}
+  .cell.empty-inmonth{cursor:pointer;}
+  .cell.empty-inmonth:active{background:#f0fdfa;}
+  .cell .badge{position:absolute; top:4px; right:4px; background:var(--red); color:#fff;
+    font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px;}
+  .cell .loc{margin-top:15px; font-weight:600; color:var(--ink); font-size:10.5px;
+    line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
+  .cell .icons{margin-top:auto; font-size:11px; letter-spacing:1px;}
+  .cell.today{box-shadow:0 0 0 2px var(--today) inset;}
+  .add-plus{position:absolute; bottom:4px; right:6px; color:#0e7490; font-size:15px; opacity:.5;}
+  .legend{display:flex; gap:14px; justify-content:center; margin-top:12px; font-size:12px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .swatch{width:14px; height:14px; border-radius:4px; background:var(--trip); border:1px solid var(--trip-line);}
+
+  /* Detail overlay */
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:40; display:none;}
+  .overlay.show{display:block;}
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; max-height:92vh; overflow-y:auto;
+    background:#fff; border-radius:18px 18px 0 0; padding:0 0 30px;
+    max-width:820px; margin:0 auto; animation:slideup .22s ease;
+  }
+  @keyframes slideup{from{transform:translateY(30px);} to{transform:none;}}
+  .sheet-head{position:sticky; top:0; background:var(--red); color:#fff;
+    padding:14px 16px; border-radius:18px 18px 0 0; display:flex; align-items:center; gap:10px;}
+  .sheet-head .nav{background:rgba(255,255,255,.18); border:none; color:#fff;
+    width:34px; height:34px; border-radius:9px; font-size:17px; cursor:pointer;}
+  .sheet-head .title{flex:1; min-width:0;}
+  .sheet-head .title .t1{font-weight:700; font-size:16px;}
+  .sheet-head .title .t2{font-size:12px; opacity:.9;}
+  .sheet-head .close{background:rgba(255,255,255,.18); border:none; color:#fff;
+    width:34px; height:34px; border-radius:9px; font-size:16px; cursor:pointer;}
+  .sheet-body{padding:6px 16px 0;}
+  .field{margin-top:14px;}
   .field label{display:block; font-size:11.5px; font-weight:700; text-transform:uppercase;
     letter-spacing:.5px; color:var(--muted); margin-bottom:5px;}
-  .field input, .field textarea{
-    width:100%; border:1px solid var(--line); border-radius:9px; padding:9px 10px;
-    font-size:15px; font-family:inherit; color:var(--ink); background:#fbfbfa;
-  }
+  .field input, .field textarea{width:100%; border:1px solid var(--line); border-radius:9px;
+    padding:10px; font-size:15px; font-family:inherit; color:var(--ink); background:#fbfbfa;}
   .field input:focus, .field textarea:focus{outline:none; border-color:var(--accent); background:#fff;}
   .field textarea{resize:vertical; min-height:64px;}
-  .hint{font-size:11.5px; color:var(--muted); margin-top:4px;}
-  .row2{display:flex; gap:10px;}
-  .row2 .field{flex:1;}
+  .del-day{background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:9px;
+    padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer; margin-top:18px;}
 
-  .transport{display:flex; align-items:center; gap:6px; margin-top:6px;}
-  .transport .icon{font-size:15px;}
-
-  .ai-fab{
-    position:fixed; right:16px; bottom:18px; z-index:30;
-    background:var(--accent); color:#fff; border:none; border-radius:50px;
-    padding:14px 20px; font-size:15px; font-weight:700; cursor:pointer;
-    box-shadow:0 4px 16px rgba(0,0,0,.25);
-  }
-  .modal-bg{
-    position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:40;
-    display:none; align-items:flex-end; justify-content:center;
-  }
+  .ai-fab{position:fixed; right:16px; bottom:18px; z-index:30; background:var(--accent);
+    color:#fff; border:none; border-radius:50px; padding:14px 20px; font-size:15px;
+    font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);}
+  .modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
+    display:none; align-items:flex-end; justify-content:center;}
   .modal-bg.show{display:flex;}
-  .modal{
-    background:#fff; width:100%; max-width:760px; border-radius:18px 18px 0 0;
-    padding:18px 16px 22px; animation:slideup .22s ease;
-  }
-  @keyframes slideup{from{transform:translateY(30px); opacity:.6;} to{transform:none; opacity:1;}}
+  .modal{background:#fff; width:100%; max-width:760px; border-radius:18px 18px 0 0;
+    padding:18px 16px 22px; animation:slideup .22s ease;}
   .modal h2{margin:0 0 4px; font-size:17px;}
   .modal p{margin:0 0 12px; font-size:13px; color:var(--muted);}
   .modal textarea{width:100%; min-height:110px; border:1px solid var(--line); border-radius:12px;
@@ -92,48 +106,93 @@
   .ai-btns{display:flex; gap:10px; margin-top:12px;}
   .ai-btns button{flex:1; border:none; border-radius:12px; padding:13px; font-size:15px;
     font-weight:700; color:#fff; cursor:pointer;}
-  .btn-claude{background:#d97706;}
-  .btn-gemini{background:#2563eb;}
+  .btn-claude{background:#d97706;} .btn-gemini{background:#2563eb;}
   .btn-close{background:none; border:none; color:var(--muted); font-size:14px; margin-top:12px;
     width:100%; padding:6px; cursor:pointer;}
   .quick{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
   .quick span{background:var(--chip); border:1px solid var(--line); border-radius:20px;
     padding:6px 11px; font-size:12.5px; cursor:pointer;}
-  .add-day{width:100%; border:1px dashed #cbd5e1; background:#fff; color:var(--accent);
-    border-radius:12px; padding:13px; font-size:14px; font-weight:700; cursor:pointer; margin-bottom:20px;}
-  .del-day{background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:9px;
-    padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; margin-top:14px;}
-  .saved-flash{position:fixed; top:70px; left:50%; transform:translateX(-50%);
+  .saved-flash{position:fixed; top:64px; left:50%; transform:translateX(-50%);
     background:#111827; color:#fff; padding:8px 16px; border-radius:20px; font-size:13px;
-    z-index:50; opacity:0; transition:opacity .2s; pointer-events:none;}
+    z-index:60; opacity:0; transition:opacity .2s; pointer-events:none;}
   .saved-flash.show{opacity:.92;}
   input[type=file]{display:none;}
 </style>
 </head>
 <body>
 <header>
-  <h1>🗾 Japan · 22-Day Trip</h1>
-  <div class="sub" id="tripRange">Tap a day to expand and edit · changes save automatically</div>
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)">‹</button>
+    <h1 id="monthTitle">August 2026</h1>
+    <button onclick="changeMonth(1)">›</button>
+  </div>
+  <div class="sub">🗾 22-Day Japan Trip · tap a red day to open & edit its details</div>
   <div class="toolbar">
-    <button onclick="expandAll(true)">Expand all</button>
-    <button onclick="expandAll(false)">Collapse</button>
+    <button onclick="backToTrip()">📍 Trip month</button>
     <button onclick="exportData()">Backup</button>
     <button onclick="document.getElementById('importFile').click()">Restore</button>
-    <button onclick="resetData()">Reset sample</button>
+    <button onclick="resetData()">Reset</button>
   </div>
   <input type="file" id="importFile" accept="application/json" onchange="importData(event)">
 </header>
 
-<main id="days"></main>
-<button class="add-day" onclick="addDay()">＋ Add a day</button>
+<main>
+  <div class="weekdays">
+    <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+  </div>
+  <div class="grid" id="grid"></div>
+  <div class="legend">
+    <span><span class="swatch"></span> Trip day (tap to edit)</span>
+    <span>＋ Empty day (tap to add)</span>
+  </div>
+</main>
 
+<!-- Day detail sheet -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="nav" onclick="navDay(-1)">‹</button>
+      <div class="title"><div class="t1" id="dTitle">Day</div><div class="t2" id="dDate"></div></div>
+      <button class="nav" onclick="navDay(1)">›</button>
+      <button class="close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>📅 Date</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="field">
+        <label>📍 Location</label>
+        <input type="text" id="fLoc" placeholder="e.g. Kyoto — East">
+      </div>
+      <div class="field">
+        <label>🍜 Restaurants</label>
+        <textarea id="fRest" placeholder="Places to eat..."></textarea>
+      </div>
+      <div class="field">
+        <label>🗻 Places to visit</label>
+        <textarea id="fPlaces" placeholder="Sights & activities..."></textarea>
+      </div>
+      <div class="field">
+        <label>📏 Distance</label>
+        <input type="text" id="fDist" placeholder="e.g. Kyoto → Osaka ≈ 55 km">
+      </div>
+      <div class="field">
+        <label>🚆 Transport — train</label>
+        <input type="text" id="fTrain" placeholder="e.g. JR Special Rapid ~30 min">
+      </div>
+      <button class="del-day" onclick="delCurrent()">Delete this day</button>
+    </div>
+  </div>
+</div>
+
+<!-- Ask AI -->
 <button class="ai-fab" onclick="openAI()">🤖 Ask AI</button>
-
 <div class="modal-bg" id="aiModal">
   <div class="modal">
     <h2>Ask Claude or Gemini</h2>
-    <p>Type your question, then choose an assistant. It opens in a new tab with your prompt ready to send.</p>
-    <textarea id="aiPrompt" placeholder="e.g. Suggest a vegetarian dinner near Gion in Kyoto, or a 1-day Osaka itinerary..."></textarea>
+    <p>Type your question, then choose an assistant. It opens in a new tab with your prompt ready.</p>
+    <textarea id="aiPrompt" placeholder="e.g. Suggest a vegetarian dinner near Gion in Kyoto..."></textarea>
     <div class="quick">
       <span onclick="quick('Suggest 3 great restaurants near ')">Restaurants near…</span>
       <span onclick="quick('What are the must-see spots in ')">Must-see in…</span>
@@ -151,176 +210,187 @@
 <div class="saved-flash" id="flash">Saved ✓</div>
 
 <script>
-const KEY = 'japanTrip22_v1';
+const KEY = 'japanTrip_aug2026_v3';
+const pad = n => String(n).padStart(2,'0');
 
+/* 22-day trip, Aug 1–22, 2026 */
 const SAMPLE = [
-  {date:"2026-09-01", loc:"Tokyo — Arrival", restaurants:"Ichiran Ramen (Shibuya); Uobei sushi (conveyor)", places:"Shibuya Crossing; Hachiko statue; hotel check-in & rest", distance:"Narita → Shinjuku ≈ 80 km", train:"Narita Express (N'EX) ~80 min"},
-  {date:"2026-09-02", loc:"Tokyo — Asakusa & Ueno", restaurants:"Daikokuya tempura; Asakusa Menchi", places:"Senso-ji Temple; Nakamise shopping street; Ueno Park & museums", distance:"Asakusa ↔ Ueno ≈ 2 km", train:"Tokyo Metro Ginza Line ~5 min"},
-  {date:"2026-09-03", loc:"Tokyo — Shibuya & Harajuku", restaurants:"Harajuku Gyoza Lou; Afuri yuzu ramen", places:"Meiji Shrine; Takeshita Street; Shibuya Sky observation", distance:"Harajuku ↔ Shibuya ≈ 1.5 km", train:"JR Yamanote Line ~3 min"},
-  {date:"2026-09-04", loc:"Tokyo — Akihabara & teamLab", restaurants:"Kanda Matsuya soba; Gonpachi izakaya", places:"Akihabara electric town; teamLab Planets (book ahead)", distance:"Akihabara ↔ Toyosu ≈ 8 km", train:"Yamanote + Yurikamome ~30 min"},
-  {date:"2026-09-05", loc:"Day trip — Nikko", restaurants:"Hippari Dako; local yuba (tofu skin)", places:"Toshogu Shrine; Kegon Falls; Lake Chuzenji", distance:"Tokyo → Nikko ≈ 140 km", train:"Tobu Limited Express ~2 h"},
-  {date:"2026-09-06", loc:"Hakone", restaurants:"Ryokan kaiseki dinner; Bakery & Table Hakone", places:"Hakone Ropeway; Owakudani; Lake Ashi cruise; Mt Fuji views; onsen", distance:"Tokyo → Hakone ≈ 90 km", train:"Odakyu Romancecar ~85 min"},
-  {date:"2026-09-07", loc:"Kanazawa", restaurants:"Omicho Market seafood; Jiyuken omurice", places:"Kenrokuen Garden; Kanazawa Castle; Higashi Chaya district", distance:"Hakone → Kanazawa ≈ 400 km", train:"Shinkansen via Tokyo ~4 h"},
-  {date:"2026-09-08", loc:"Kanazawa", restaurants:"Sushi Ippei; Gold-leaf ice cream", places:"21st Century Museum; Nagamachi samurai district; Nomura House", distance:"City centre walking", train:"Local bus / walk"},
-  {date:"2026-09-09", loc:"Shirakawa-go & Takayama", restaurants:"Hida beef skewers; Center4 Hamburgers", places:"Shirakawa-go gassho villages (UNESCO); travel to Takayama", distance:"Kanazawa → Takayama ≈ 115 km", train:"Bus via Shirakawa-go ~2.5 h"},
-  {date:"2026-09-10", loc:"Takayama", restaurants:"Kyoya Hida cuisine; morning market snacks", places:"Old Town (Sanmachi); Takayama Jinya; morning markets", distance:"Town walking", train:"Walk / rental bike"},
-  {date:"2026-09-11", loc:"Kyoto", restaurants:"Nishiki Market street food; Menbaka fire ramen", places:"Travel to Kyoto; Nishiki Market; Pontocho alley evening", distance:"Takayama → Kyoto ≈ 220 km", train:"Ltd Exp Hida + Shinkansen ~4 h"},
-  {date:"2026-09-12", loc:"Kyoto — East", restaurants:"Kikunoi (kaiseki); Gion tea house sweets", places:"Fushimi Inari (torii gates); Kiyomizu-dera; Gion geisha district", distance:"Fushimi ↔ Gion ≈ 5 km", train:"JR Nara Line + walk"},
-  {date:"2026-09-13", loc:"Kyoto — Arashiyama", restaurants:"Arashiyama Yoshimura soba; % Arabica coffee", places:"Bamboo Grove; Tenryu-ji; Iwatayama Monkey Park; Togetsukyo Bridge", distance:"Kyoto → Arashiyama ≈ 11 km", train:"JR Sagano Line ~15 min"},
-  {date:"2026-09-14", loc:"Day trip — Nara", restaurants:"Nakatanidou mochi; kakinoha sushi", places:"Todai-ji Great Buddha; Nara Park deer; Kasuga Taisha", distance:"Kyoto → Nara ≈ 45 km", train:"Kintetsu Ltd Express ~45 min"},
-  {date:"2026-09-15", loc:"Osaka", restaurants:"Dotonbori takoyaki & okonomiyaki; Kani Doraku crab", places:"Travel to Osaka; Dotonbori & Glico sign; Shinsaibashi shopping", distance:"Kyoto → Osaka ≈ 55 km", train:"JR Special Rapid ~30 min"},
-  {date:"2026-09-16", loc:"Osaka", restaurants:"Kuromon Market; Ichiran; Harukas dining", places:"Osaka Castle; Umeda Sky Building; Abeno Harukas", distance:"Castle ↔ Umeda ≈ 6 km", train:"Osaka Loop Line ~15 min"},
-  {date:"2026-09-17", loc:"Himeji & Kobe", restaurants:"Kobe beef teppanyaki (Steakland); Akashiyaki", places:"Himeji Castle; Kobe harbour; Nunobiki Herb Garden", distance:"Osaka → Himeji ≈ 90 km", train:"Shinkansen ~30 min to Himeji"},
-  {date:"2026-09-18", loc:"Hiroshima", restaurants:"Okonomi-mura (Hiroshima-style); Ekohiiki oysters", places:"Peace Memorial Park & Museum; A-Bomb Dome", distance:"Osaka → Hiroshima ≈ 340 km", train:"Sanyo Shinkansen ~1.5 h"},
-  {date:"2026-09-19", loc:"Miyajima", restaurants:"Grilled oysters; momiji manju; anago-meshi", places:"Itsukushima floating torii; Mt Misen ropeway; friendly deer", distance:"Hiroshima → Miyajima ≈ 20 km", train:"JR + ferry ~1 h"},
-  {date:"2026-09-20", loc:"Return to Tokyo", restaurants:"Ekiben (bento) on the train; Tokyo Station ramen street", places:"Long Shinkansen day; evening in Marunouchi / Tokyo Station area", distance:"Hiroshima → Tokyo ≈ 820 km", train:"Nozomi Shinkansen ~4 h"},
-  {date:"2026-09-21", loc:"Tokyo — Last full day", restaurants:"Tsukiji outer market; Sushi Dai; farewell izakaya", places:"Tsukiji market; Ginza shopping; last souvenirs; Odaiba sunset", distance:"Tsukiji ↔ Ginza ≈ 2 km", train:"Tokyo Metro Hibiya Line ~5 min"},
-  {date:"2026-09-22", loc:"Tokyo — Departure", restaurants:"Airport sushi / final matcha treat", places:"Pack; travel to airport; fly home", distance:"Tokyo → Narita ≈ 80 km", train:"Narita Express ~60 min"}
+  {date:"2026-08-11", loc:"Tokyo — Arrival", restaurants:"Ichiran Ramen (Shibuya); Uobei sushi", places:"Shibuya Crossing; Hachiko statue; hotel check-in & rest", distance:"Narita → Shinjuku ≈ 80 km", train:"Narita Express (N'EX) ~80 min"},
+  {date:"2026-08-12", loc:"Tokyo — Asakusa & Ueno", restaurants:"Daikokuya tempura; Asakusa Menchi", places:"Senso-ji Temple; Nakamise street; Ueno Park & museums", distance:"Asakusa ↔ Ueno ≈ 2 km", train:"Tokyo Metro Ginza Line ~5 min"},
+  {date:"2026-08-13", loc:"Tokyo — Shibuya & Harajuku", restaurants:"Harajuku Gyoza Lou; Afuri yuzu ramen", places:"Meiji Shrine; Takeshita Street; Shibuya Sky", distance:"Harajuku ↔ Shibuya ≈ 1.5 km", train:"JR Yamanote Line ~3 min"},
+  {date:"2026-08-14", loc:"Tokyo — Akihabara & teamLab", restaurants:"Kanda Matsuya soba; Gonpachi izakaya", places:"Akihabara electric town; teamLab Planets (book ahead)", distance:"Akihabara ↔ Toyosu ≈ 8 km", train:"Yamanote + Yurikamome ~30 min"},
+  {date:"2026-08-15", loc:"Day trip — Nikko", restaurants:"Hippari Dako; local yuba (tofu skin)", places:"Toshogu Shrine; Kegon Falls; Lake Chuzenji", distance:"Tokyo → Nikko ≈ 140 km", train:"Tobu Limited Express ~2 h"},
+  {date:"2026-08-16", loc:"Hakone", restaurants:"Ryokan kaiseki dinner; Bakery & Table Hakone", places:"Hakone Ropeway; Owakudani; Lake Ashi cruise; Mt Fuji; onsen", distance:"Tokyo → Hakone ≈ 90 km", train:"Odakyu Romancecar ~85 min"},
+  {date:"2026-08-17", loc:"Kanazawa", restaurants:"Omicho Market seafood; Jiyuken omurice", places:"Kenrokuen Garden; Kanazawa Castle; Higashi Chaya district", distance:"Hakone → Kanazawa ≈ 400 km", train:"Shinkansen via Tokyo ~4 h"},
+  {date:"2026-08-18", loc:"Kanazawa", restaurants:"Sushi Ippei; gold-leaf ice cream", places:"21st Century Museum; Nagamachi samurai district; Nomura House", distance:"City centre walking", train:"Local bus / walk"},
+  {date:"2026-08-19", loc:"Shirakawa-go & Takayama", restaurants:"Hida beef skewers; Center4 Hamburgers", places:"Shirakawa-go gassho villages (UNESCO); travel to Takayama", distance:"Kanazawa → Takayama ≈ 115 km", train:"Bus via Shirakawa-go ~2.5 h"},
+  {date:"2026-08-20", loc:"Takayama", restaurants:"Kyoya Hida cuisine; morning market snacks", places:"Old Town (Sanmachi); Takayama Jinya; morning markets", distance:"Town walking", train:"Walk / rental bike"},
+  {date:"2026-08-21", loc:"Kyoto", restaurants:"Nishiki Market street food; Menbaka fire ramen", places:"Travel to Kyoto; Nishiki Market; Pontocho alley evening", distance:"Takayama → Kyoto ≈ 220 km", train:"Ltd Exp Hida + Shinkansen ~4 h"},
+  {date:"2026-08-22", loc:"Kyoto — East", restaurants:"Kikunoi (kaiseki); Gion tea house sweets", places:"Fushimi Inari torii gates; Kiyomizu-dera; Gion district", distance:"Fushimi ↔ Gion ≈ 5 km", train:"JR Nara Line + walk"},
+  {date:"2026-08-23", loc:"Kyoto — Arashiyama", restaurants:"Arashiyama Yoshimura soba; % Arabica coffee", places:"Bamboo Grove; Tenryu-ji; Monkey Park; Togetsukyo Bridge", distance:"Kyoto → Arashiyama ≈ 11 km", train:"JR Sagano Line ~15 min"},
+  {date:"2026-08-24", loc:"Day trip — Nara", restaurants:"Nakatanidou mochi; kakinoha sushi", places:"Todai-ji Great Buddha; Nara Park deer; Kasuga Taisha", distance:"Kyoto → Nara ≈ 45 km", train:"Kintetsu Ltd Express ~45 min"},
+  {date:"2026-08-25", loc:"Osaka", restaurants:"Dotonbori takoyaki & okonomiyaki; Kani Doraku crab", places:"Travel to Osaka; Dotonbori & Glico sign; Shinsaibashi", distance:"Kyoto → Osaka ≈ 55 km", train:"JR Special Rapid ~30 min"},
+  {date:"2026-08-26", loc:"Osaka", restaurants:"Kuromon Market; Ichiran; Harukas dining", places:"Osaka Castle; Umeda Sky Building; Abeno Harukas", distance:"Castle ↔ Umeda ≈ 6 km", train:"Osaka Loop Line ~15 min"},
+  {date:"2026-08-27", loc:"Himeji & Kobe", restaurants:"Kobe beef teppanyaki (Steakland); akashiyaki", places:"Himeji Castle; Kobe harbour; Nunobiki Herb Garden", distance:"Osaka → Himeji ≈ 90 km", train:"Shinkansen ~30 min to Himeji"},
+  {date:"2026-08-28", loc:"Hiroshima", restaurants:"Okonomi-mura (Hiroshima-style); oysters", places:"Peace Memorial Park & Museum; A-Bomb Dome", distance:"Osaka → Hiroshima ≈ 340 km", train:"Sanyo Shinkansen ~1.5 h"},
+  {date:"2026-08-29", loc:"Miyajima", restaurants:"Grilled oysters; momiji manju; anago-meshi", places:"Itsukushima floating torii; Mt Misen ropeway; deer", distance:"Hiroshima → Miyajima ≈ 20 km", train:"JR + ferry ~1 h"},
+  {date:"2026-08-30", loc:"Return to Tokyo", restaurants:"Ekiben on the train; Tokyo Station ramen street", places:"Long Shinkansen day; evening in Marunouchi", distance:"Hiroshima → Tokyo ≈ 820 km", train:"Nozomi Shinkansen ~4 h"},
+  {date:"2026-08-31", loc:"Tokyo — Last full day", restaurants:"Tsukiji outer market; Sushi Dai; farewell izakaya", places:"Tsukiji market; Ginza shopping; Odaiba sunset", distance:"Tsukiji ↔ Ginza ≈ 2 km", train:"Tokyo Metro Hibiya Line ~5 min"},
+  {date:"2026-09-01", loc:"Tokyo — Departure", restaurants:"Airport sushi / final matcha treat", places:"Pack; travel to airport; fly home", distance:"Tokyo → Narita ≈ 80 km", train:"Narita Express ~60 min"}
 ];
 
 let data = load();
+let viewYear, viewMonth, currentIso = null;
 
 function load(){
-  try{ const s = localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
+  try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
   return JSON.parse(JSON.stringify(SAMPLE));
 }
 function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(data)); flash(); }catch(e){ alert('Could not save. On some phones private-browsing blocks storage.'); }
+  try{ localStorage.setItem(KEY, JSON.stringify(data)); flash(); }
+  catch(e){ alert('Could not save (private browsing can block storage).'); }
 }
 let flashT;
-function flash(){
-  const f = document.getElementById('flash'); f.classList.add('show');
-  clearTimeout(flashT); flashT = setTimeout(()=>f.classList.remove('show'), 900);
+function flash(){ const f=document.getElementById('flash'); f.classList.add('show');
+  clearTimeout(flashT); flashT=setTimeout(()=>f.classList.remove('show'),900); }
+
+function initView(){
+  const first = data.find(d=>d.date);
+  if(first){ const dt=new Date(first.date+'T00:00:00'); viewYear=dt.getFullYear(); viewMonth=dt.getMonth(); }
+  else { viewYear=2026; viewMonth=7; }
+}
+function backToTrip(){ initView(); renderCal(); }
+function changeMonth(delta){
+  viewMonth+=delta;
+  if(viewMonth<0){viewMonth=11; viewYear--;}
+  if(viewMonth>11){viewMonth=0; viewYear++;}
+  renderCal();
 }
 
-function fmtDate(iso){
-  if(!iso) return 'Set date';
-  const d = new Date(iso+'T00:00:00');
-  if(isNaN(d)) return iso;
-  return d.toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const tripIndex = iso => data.findIndex(d=>d.date===iso);
+
+function renderCal(){
+  document.getElementById('monthTitle').textContent = MONTHS[viewMonth]+' '+viewYear;
+  const grid=document.getElementById('grid'); grid.innerHTML='';
+  const firstDay=new Date(viewYear,viewMonth,1).getDay();
+  const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  const todayIso=new Date().toISOString().slice(0,10);
+
+  for(let b=0;b<firstDay;b++){ const c=document.createElement('div'); c.className='cell blank'; grid.appendChild(c); }
+
+  for(let day=1;day<=daysInMonth;day++){
+    const iso=`${viewYear}-${pad(viewMonth+1)}-${pad(day)}`;
+    const idx=tripIndex(iso);
+    const c=document.createElement('div');
+    c.className='cell';
+    if(iso===todayIso) c.classList.add('today');
+    if(idx>-1){
+      const d=data[idx];
+      c.classList.add('trip');
+      c.innerHTML=`<div class="dnum">${day}</div>
+        <div class="badge">D${idx+1}</div>
+        <div class="loc">${escapeHtml(d.loc)}</div>
+        <div class="icons">${d.restaurants?'🍜':''}${d.places?'🗻':''}${d.train?'🚆':''}</div>`;
+      c.onclick=()=>openDetail(iso);
+    } else {
+      c.classList.add('empty-inmonth');
+      c.innerHTML=`<div class="dnum">${day}</div><div class="add-plus">＋</div>`;
+      c.onclick=()=>addOnDate(iso);
+    }
+    grid.appendChild(c);
+  }
 }
 
-function render(){
-  const wrap = document.getElementById('days');
-  wrap.innerHTML = '';
-  data.forEach((day, i)=>{
-    const el = document.createElement('div');
-    el.className = 'day';
-    el.innerHTML = `
-      <div class="day-head" onclick="toggle(this)">
-        <div class="day-num">${i+1}</div>
-        <div class="day-meta">
-          <div class="day-loc">${escapeHtml(day.loc)||'Untitled day'}</div>
-          <div class="day-date">${fmtDate(day.date)}</div>
-        </div>
-        <div class="chev">▼</div>
-      </div>
-      <div class="day-body">
-        <div class="row2">
-          <div class="field">
-            <label>Date</label>
-            <input type="date" value="${day.date||''}" onchange="upd(${i},'date',this.value)">
-          </div>
-          <div class="field">
-            <label>Location</label>
-            <input type="text" value="${escapeAttr(day.loc)}" oninput="upd(${i},'loc',this.value)" onblur="render()">
-          </div>
-        </div>
-        <div class="field">
-          <label>🍜 Restaurants</label>
-          <textarea oninput="upd(${i},'restaurants',this.value)">${escapeHtml(day.restaurants)}</textarea>
-        </div>
-        <div class="field">
-          <label>📍 Places to visit</label>
-          <textarea oninput="upd(${i},'places',this.value)">${escapeHtml(day.places)}</textarea>
-        </div>
-        <div class="field">
-          <label>📏 Distance</label>
-          <input type="text" value="${escapeAttr(day.distance)}" oninput="upd(${i},'distance',this.value)">
-        </div>
-        <div class="field">
-          <label>🚆 Transport — train</label>
-          <input type="text" value="${escapeAttr(day.train)}" oninput="upd(${i},'train',this.value)">
-        </div>
-        <button class="del-day" onclick="delDay(${i})">Delete this day</button>
-      </div>`;
-    wrap.appendChild(el);
+function addOnDate(iso){
+  data.push({date:iso, loc:"New day", restaurants:"", places:"", distance:"", train:""});
+  data.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  save(); renderCal(); openDetail(iso);
+}
+
+/* ---- Detail sheet ---- */
+function openDetail(iso){
+  currentIso=iso;
+  const idx=tripIndex(iso); if(idx<0) return;
+  const d=data[idx];
+  const dt=new Date(iso+'T00:00:00');
+  document.getElementById('dTitle').textContent='Day '+(idx+1);
+  document.getElementById('dDate').textContent=dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('fDate').value=d.date||'';
+  document.getElementById('fLoc').value=d.loc||'';
+  document.getElementById('fRest').value=d.restaurants||'';
+  document.getElementById('fPlaces').value=d.places||'';
+  document.getElementById('fDist').value=d.distance||'';
+  document.getElementById('fTrain').value=d.train||'';
+  document.getElementById('detailOverlay').classList.add('show');
+}
+function closeDetail(){ document.getElementById('detailOverlay').classList.remove('show'); renderCal(); }
+
+function bindField(id,field){
+  document.getElementById(id).addEventListener('input',function(){
+    const idx=tripIndex(currentIso); if(idx<0) return;
+    data[idx][field]=this.value;
+    if(field==='date'){
+      data.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+      currentIso=this.value;
+    }
+    save();
   });
-  updateRange();
+}
+bindField('fDate','date'); bindField('fLoc','loc'); bindField('fRest','restaurants');
+bindField('fPlaces','places'); bindField('fDist','distance'); bindField('fTrain','train');
+
+function navDay(delta){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  const ni=idx+delta;
+  if(ni<0||ni>=data.length) return;
+  openDetail(data[ni].date);
+}
+function delCurrent(){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  if(confirm('Delete Day '+(idx+1)+'?')){ data.splice(idx,1); save(); closeDetail(); }
 }
 
-function updateRange(){
-  const first = data[0] && data[0].date, last = data[data.length-1] && data[data.length-1].date;
-  const r = document.getElementById('tripRange');
-  if(first && last){ r.textContent = `${fmtDate(first)} → ${fmtDate(last)} · ${data.length} days · tap to edit`; }
-  else { r.textContent = `${data.length} days · tap a day to edit`; }
-}
-
-function toggle(head){ head.parentElement.classList.toggle('open'); }
-function expandAll(open){ document.querySelectorAll('.day').forEach(d=> d.classList.toggle('open', open)); }
-function upd(i,field,val){ data[i][field]=val; save(); if(field==='date') updateRange(); }
-
-function addDay(){
-  data.push({date:"", loc:"New day", restaurants:"", places:"", distance:"", train:""});
-  save(); render();
-  const els = document.querySelectorAll('.day'); const last = els[els.length-1];
-  last.classList.add('open'); last.scrollIntoView({behavior:'smooth', block:'center'});
-}
-function delDay(i){
-  if(confirm('Delete day '+(i+1)+'?')){ data.splice(i,1); save(); render(); }
-}
 function resetData(){
-  if(confirm('Reset to the sample Japan itinerary? Your current edits will be lost.')){
-    data = JSON.parse(JSON.stringify(SAMPLE)); save(); render();
+  if(confirm('Reset to the sample August itinerary? Current edits will be lost.')){
+    data=JSON.parse(JSON.stringify(SAMPLE)); save(); initView(); renderCal();
   }
 }
 
 /* ---- Backup / Restore ---- */
 function exportData(){
-  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'japan-trip-backup.json';
-  a.click();
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='japan-trip-backup.json'; a.click();
 }
 function importData(ev){
-  const file = ev.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = e=>{
-    try{ const parsed = JSON.parse(e.target.result);
-      if(Array.isArray(parsed)){ data = parsed; save(); render(); alert('Trip restored ✓'); }
-      else alert('That file does not look like a trip backup.');
-    }catch(err){ alert('Could not read that file.'); }
-  };
-  reader.readAsText(file);
-  ev.target.value = '';
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{ try{ const p=JSON.parse(e.target.result);
+    if(Array.isArray(p)){ data=p; save(); initView(); renderCal(); alert('Trip restored ✓'); }
+    else alert('That file does not look like a trip backup.');
+  }catch(err){ alert('Could not read that file.'); } };
+  r.readAsText(file); ev.target.value='';
 }
 
 /* ---- Ask AI ---- */
 function openAI(){ document.getElementById('aiModal').classList.add('show'); document.getElementById('aiPrompt').focus(); }
 function closeAI(){ document.getElementById('aiModal').classList.remove('show'); }
-function quick(text){
-  const t = document.getElementById('aiPrompt');
-  t.value = (t.value ? t.value+'\n' : '') + text;
-  t.focus();
-}
+function quick(t){ const el=document.getElementById('aiPrompt'); el.value=(el.value?el.value+'\n':'')+t; el.focus(); }
 function askAI(which){
-  const q = document.getElementById('aiPrompt').value.trim();
+  const q=document.getElementById('aiPrompt').value.trim();
   if(!q){ alert('Type a question first.'); return; }
-  let url;
-  if(which==='claude') url = 'https://claude.ai/new?q=' + encodeURIComponent(q);
-  else url = 'https://gemini.google.com/app?q=' + encodeURIComponent(q);
-  window.open(url, '_blank');
-  closeAI();
+  const url = which==='claude'
+    ? 'https://claude.ai/new?q='+encodeURIComponent(q)
+    : 'https://gemini.google.com/app?q='+encodeURIComponent(q);
+  window.open(url,'_blank'); closeAI();
 }
 
-/* ---- helpers ---- */
 function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-function escapeAttr(s){ return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+document.getElementById('detailOverlay').addEventListener('click',e=>{ if(e.target.id==='detailOverlay') closeDetail(); });
+document.getElementById('aiModal').addEventListener('click',e=>{ if(e.target.id==='aiModal') closeAI(); });
 
-document.getElementById('aiModal').addEventListener('click', e=>{ if(e.target.id==='aiModal') closeAI(); });
-
-render();
+initView(); renderCal();
 </script>
 </body>
 </html>

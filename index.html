@@ -212,9 +212,8 @@
 <div class="modal-bg" id="aiModal">
   <div class="modal">
     <h2>Ask Claude or Gemini</h2>
-    <p id="aiModeHint">Type your question, then choose an assistant.
-      <span id="aiConnectLink" style="color:var(--accent); font-weight:700; cursor:pointer;" onclick="openSettings()">🔑 Connect your account</span>
-      to get answers right here instead of a new tab.</p>
+    <p>Type your question, then choose an assistant. It opens in a new tab with your question ready —
+      signed in with whichever account you're already logged into (your Claude Pro or your Google account).</p>
     <textarea id="aiPrompt" placeholder="e.g. Suggest a vegetarian dinner near Gion in Kyoto..."></textarea>
     <div class="quick">
       <span onclick="quick('Suggest 3 great restaurants near ')">Restaurants near…</span>
@@ -223,46 +222,10 @@
       <span onclick="quick('Give me a rainy-day plan for ')">Rainy day…</span>
     </div>
     <div class="ai-btns">
-      <button class="btn-claude" onclick="askAI('claude')"><span id="claudeBtnLabel">Open in Claude ↗</span></button>
-      <button class="btn-gemini" onclick="askAI('gemini')"><span id="geminiBtnLabel">Open in Gemini ↗</span></button>
+      <button class="btn-claude" onclick="askAI('claude')">Ask Claude ↗</button>
+      <button class="btn-gemini" onclick="askAI('gemini')">Ask Gemini ↗</button>
     </div>
-    <div id="aiAnswer" style="display:none; margin-top:14px; background:var(--chip); border:1px solid var(--line);
-      border-radius:12px; padding:12px; font-size:14px; white-space:pre-wrap; max-height:260px; overflow-y:auto;"></div>
     <button class="btn-close" onclick="closeAI()">Cancel</button>
-  </div>
-</div>
-
-<!-- AI account / API key settings -->
-<div class="modal-bg" id="settingsModal">
-  <div class="modal">
-    <h2>🔑 Connect Claude / Gemini</h2>
-    <p>Claude.ai and Gemini's apps don't offer a way for a plain HTML page like this one to log in to your account —
-      that needs a proper backend. What <em>does</em> work here is an <strong>API key</strong>: a personal code that lets
-      this page ask the AI directly and show the answer below, instead of opening a new tab.</p>
-    <div class="field">
-      <label>Claude API key</label>
-      <input type="password" id="claudeKey" placeholder="sk-ant-...">
-      <div style="font-size:12px; color:var(--muted); margin-top:4px;">
-        Create one at <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com/settings/keys</a>
-        (needs a payment method — usage is billed per request, it's not your Claude.ai subscription).
-      </div>
-    </div>
-    <div class="field">
-      <label>Gemini API key</label>
-      <input type="password" id="geminiKey" placeholder="AIza...">
-      <div style="font-size:12px; color:var(--muted); margin-top:4px;">
-        Create one free at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">aistudio.google.com/apikey</a>.
-      </div>
-    </div>
-    <p style="font-size:12px; background:#fffbeb; border:1px solid #fde68a; border-radius:9px; padding:8px 10px;">
-      ⚠️ Keys are saved only in this browser's local storage on this device — never uploaded anywhere else. Don't paste
-      your key here on a shared/public computer, and don't send this file (with keys already saved) to anyone else.
-    </p>
-    <div class="ai-btns">
-      <button class="btn-claude" onclick="saveKeys()">Save</button>
-      <button class="btn-gemini" style="background:#6b7280" onclick="clearKeys()">Clear keys</button>
-    </div>
-    <button class="btn-close" onclick="closeSettings()">Close</button>
   </div>
 </div>
 
@@ -719,107 +682,26 @@ function importData(ev){
   r.readAsText(file); ev.target.value='';
 }
 
-/* ---- Ask AI ---- */
-const KEY_CLAUDE='japanTrip_claudeApiKey_v1';
-const KEY_GEMINI='japanTrip_geminiApiKey_v1';
-
-function openAI(){
-  document.getElementById('aiModal').classList.add('show');
-  document.getElementById('aiAnswer').style.display='none';
-  refreshAIButtons();
-  document.getElementById('aiPrompt').focus();
-}
+/* ---- Ask AI ----
+   Opens claude.ai or gemini.google.com in a new tab with the question pre-filled.
+   You stay signed in with whatever account your browser is already logged into:
+   your Claude Pro account for Claude, your Google account for Gemini.
+   No API key, no extra cost — it just uses the sites you already pay for / have. */
+function openAI(){ document.getElementById('aiModal').classList.add('show'); document.getElementById('aiPrompt').focus(); }
 function closeAI(){ document.getElementById('aiModal').classList.remove('show'); }
 function quick(t){ const el=document.getElementById('aiPrompt'); el.value=(el.value?el.value+'\n':'')+t; el.focus(); }
-
-function refreshAIButtons(){
-  const hasClaude=!!localStorage.getItem(KEY_CLAUDE);
-  const hasGemini=!!localStorage.getItem(KEY_GEMINI);
-  document.getElementById('claudeBtnLabel').textContent = hasClaude ? 'Ask Claude' : 'Open in Claude ↗';
-  document.getElementById('geminiBtnLabel').textContent = hasGemini ? 'Ask Gemini' : 'Open in Gemini ↗';
-  document.getElementById('aiConnectLink').style.display = (hasClaude && hasGemini) ? 'none' : 'inline';
-}
-
-function openSettings(){
-  document.getElementById('claudeKey').value = localStorage.getItem(KEY_CLAUDE)||'';
-  document.getElementById('geminiKey').value = localStorage.getItem(KEY_GEMINI)||'';
-  document.getElementById('settingsModal').classList.add('show');
-}
-function closeSettings(){ document.getElementById('settingsModal').classList.remove('show'); refreshAIButtons(); }
-function saveKeys(){
-  const c=document.getElementById('claudeKey').value.trim();
-  const g=document.getElementById('geminiKey').value.trim();
-  if(c) localStorage.setItem(KEY_CLAUDE,c); else localStorage.removeItem(KEY_CLAUDE);
-  if(g) localStorage.setItem(KEY_GEMINI,g); else localStorage.removeItem(KEY_GEMINI);
-  closeSettings();
-  flash();
-}
-function clearKeys(){
-  localStorage.removeItem(KEY_CLAUDE); localStorage.removeItem(KEY_GEMINI);
-  document.getElementById('claudeKey').value=''; document.getElementById('geminiKey').value='';
-}
-
-async function askAI(which){
+function askAI(which){
   const q=document.getElementById('aiPrompt').value.trim();
   if(!q){ alert('Type a question first.'); return; }
-  const key = localStorage.getItem(which==='claude'?KEY_CLAUDE:KEY_GEMINI);
-
-  if(!key){
-    const url = which==='claude'
-      ? 'https://claude.ai/new?q='+encodeURIComponent(q)
-      : 'https://gemini.google.com/app?q='+encodeURIComponent(q);
-    window.open(url,'_blank'); closeAI();
-    return;
-  }
-
-  const out=document.getElementById('aiAnswer');
-  out.style.display='block';
-  out.textContent='Thinking…';
-  try{
-    const answer = which==='claude' ? await callClaude(key,q) : await callGemini(key,q);
-    out.textContent = answer;
-  }catch(err){
-    out.textContent = "Couldn't reach "+(which==='claude'?'Claude':'Gemini')+": "+err.message+
-      "\n\nCheck the API key in 🔑 Connect your account, or just use Open in "+(which==='claude'?'Claude':'Gemini')+" ↗ without a key.";
-  }
-}
-
-async function callClaude(key,q){
-  const res = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{
-      'Content-Type':'application/json',
-      'x-api-key':key,
-      'anthropic-version':'2023-06-01',
-      'anthropic-dangerous-direct-browser-access':'true'
-    },
-    body: JSON.stringify({
-      model:'claude-sonnet-5',
-      max_tokens:1024,
-      messages:[{role:'user', content:q}]
-    })
-  });
-  if(!res.ok){ const t=await res.text(); throw new Error('HTTP '+res.status+' — '+t.slice(0,200)); }
-  const data = await res.json();
-  return (data.content||[]).map(b=>b.text||'').join('\n').trim() || '(no text in response)';
-}
-
-async function callGemini(key,q){
-  const res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key='+encodeURIComponent(key),{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ contents:[{ parts:[{ text:q }] }] })
-  });
-  if(!res.ok){ const t=await res.text(); throw new Error('HTTP '+res.status+' — '+t.slice(0,200)); }
-  const data = await res.json();
-  const parts = data.candidates?.[0]?.content?.parts || [];
-  return parts.map(p=>p.text||'').join('\n').trim() || '(no text in response)';
+  const url = which==='claude'
+    ? 'https://claude.ai/new?q='+encodeURIComponent(q)
+    : 'https://gemini.google.com/app?q='+encodeURIComponent(q);
+  window.open(url,'_blank'); closeAI();
 }
 
 function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 document.getElementById('detailOverlay').addEventListener('click',e=>{ if(e.target.id==='detailOverlay') closeDetail(); });
 document.getElementById('aiModal').addEventListener('click',e=>{ if(e.target.id==='aiModal') closeAI(); });
-document.getElementById('settingsModal').addEventListener('click',e=>{ if(e.target.id==='settingsModal') closeSettings(); });
 
 initView(); renderCal();
 </script>

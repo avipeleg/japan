@@ -122,6 +122,31 @@
     z-index:60; opacity:0; transition:opacity .2s; pointer-events:none;}
   .saved-flash.show{opacity:.92;}
   input[type=file]{display:none;}
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin-top:18px;}
+  .toolbar .tb-primary{border:none; background:var(--accent); color:#fff; font-weight:700;
+    padding:10px 16px; border-radius:10px; cursor:pointer; font-size:14px;}
+  .toolbar .tb-primary:hover{filter:brightness(1.08);}
+  .toolbar .tb{border:1px solid var(--line); background:var(--card); color:#374151;
+    padding:9px 13px; border-radius:10px; cursor:pointer; font-size:13px;}
+  .toolbar .tb:hover{border-color:var(--accent); color:var(--accent);}
+  .toolbar-hint{text-align:center; font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5;}
+  .toolbar-hint code{background:var(--line); padding:1px 5px; border-radius:4px;}
+  .places-list{display:flex; flex-direction:column; gap:8px;}
+  .place-row{display:flex; gap:6px; align-items:center;}
+  .place-row .p-name{flex:1 1 45%; min-width:0;}
+  .place-row .p-map{flex:1 1 55%; min-width:0;}
+  .place-row input{width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:8px;
+    padding:8px 9px; font-size:13.5px; background:#fafaf9;}
+  .place-row input:focus{outline:none; border-color:var(--accent); background:#fff;}
+  .place-row .p-open,.place-row .p-del{flex:0 0 auto; border:none; cursor:pointer; border-radius:8px;
+    width:30px; height:34px; font-size:14px; line-height:1;}
+  .place-row .p-open{background:var(--accent); color:#fff;}
+  .place-row .p-open:disabled{background:var(--line); color:#a8a29e; cursor:not-allowed;}
+  .place-row .p-del{background:#fee2e2; color:#b91c1c;}
+  .add-place{margin-top:9px; border:1px dashed var(--accent); background:transparent; color:var(--accent);
+    font-weight:600; padding:8px 12px; border-radius:9px; cursor:pointer; font-size:13px;}
+  .add-place:hover{background:var(--accent); color:#fff;}
+  .places-empty{font-size:12.5px; color:var(--muted); padding:2px;}
 </style>
 </head>
 <body>
@@ -143,6 +168,16 @@
     <span><span class="swatch"></span> Trip day (tap to edit)</span>
     <span>＋ Empty day (tap to add)</span>
   </div>
+
+  <div class="toolbar">
+    <button class="tb-primary" onclick="exportHTML()">⬇️ Download for Git</button>
+    <button class="tb" onclick="exportData()">Backup (.json)</button>
+    <label class="tb" style="cursor:pointer;">Restore
+      <input type="file" accept="application/json" onchange="importData(event)" style="display:none;">
+    </label>
+    <button class="tb" onclick="resetData()">Reset</button>
+  </div>
+  <div class="toolbar-hint">Edit your days above, then <b>Download for Git</b> → commit the new <code>index.html</code> to your repo to make it the default everywhere.</div>
 </main>
 
 <!-- Day detail sheet -->
@@ -192,7 +227,8 @@
       </div>
       <div class="field">
         <label>🗻 Places to visit</label>
-        <textarea id="fPlaces" placeholder="Sights & activities..."></textarea>
+        <div id="placesList" class="places-list"></div>
+        <button type="button" class="add-place" onclick="addPlaceRow()">＋ Add place</button>
       </div>
       <div class="field">
         <label>📏 Distance</label>
@@ -231,287 +267,43 @@
 
 <div class="saved-flash" id="flash">Saved ✓</div>
 
+<script type="application/json" id="tripSeed">{"savedAt": 0, "days": [{"date": "2026-08-11", "loc": "Tokyo — Arrival", "hotel": "Shibuya Tokyu REI Hotel", "address": "Shibuya-ku, Shibuya 1-24-10", "book": "https://secure.booking.com/mytrips.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&trip_id=304612259722800", "map": "https://www.google.com/maps/place/Shibuya+Tokyu+REI+Hotel/@35.6602274,139.6994128,17z/data=!3m1!5s0x60188b5809a1198d:0xb01df47d527788b7!4m9!3m8!1s0x60188b58080af45d:0xccba35698dd6a64c!5m2!4m1!1i2!8m2!3d35.6602231!4d139.7019877!16s%2Fg%2F1tgkh8g2", "restaurants": "", "places": "Shibuya main street; Shibuya Crossing", "distance": "", "train": "Arrive — airport → Shibuya"}, {"date": "2026-08-12", "loc": "Fuji Five Lakes", "hotel": "Kawaguchiko Country Cottage Ban", "address": "Fujikawaguchiko, Kawaguchi 2092", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips", "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2", "restaurants": "", "places": "Pick up rental car (TBD); drive to Kawaguchiko; Chureito Pagoda — ~400 steps to the viewpoint (travel by car from the hotel)", "distance": "Tokyo → Kawaguchiko ≈ 115 km", "train": "Rental car"}, {"date": "2026-08-13", "loc": "Fuji Five Lakes", "hotel": "Kawaguchiko Country Cottage Ban", "address": "Fujikawaguchiko, Kawaguchi 2092", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips", "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2", "restaurants": "", "places": "Lake Kawaguchiko area", "distance": "", "train": "Car"}, {"date": "2026-08-14", "loc": "Fuji Five Lakes", "hotel": "Kawaguchiko Country Cottage Ban", "address": "Fujikawaguchiko, Kawaguchi 2092", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips", "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2", "restaurants": "", "places": "Mt Fuji area / free day", "distance": "", "train": "Car"}, {"date": "2026-08-15", "loc": "Hakone", "hotel": "Yumoto Station Hotel MIRAHAKONE", "address": "Kanagawa, Hakone, Yumoto 698-10", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=zhaEdLvT1iUM3T9t&source=mytrips", "map": "https://www.google.com/maps/place/Yumoto+Station+Hotel+MIRAHAKONE/@35.2321569,139.0980538,17z/data=!4m11!3m10!1s0x6019a37526d7d6a9:0x7349804654dd0804!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2321526!4d139.1029247!16s%2Fg%2F11g0m56wzk", "restaurants": "", "places": "Drive to Hakone; check in. Owakudani — cable car to the volcanic crater", "distance": "Fuji → Hakone ≈ 60 km", "train": "Car"}, {"date": "2026-08-16", "loc": "Hakone", "hotel": "Hakone Ashinoko Hanaori", "address": "Kanagawa, Hakone, Motohakone Togendai 160", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips", "map": "https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt", "restaurants": "", "places": "Change hotel to Hanaori (Lake Ashi / Motohakone); onsen", "distance": "", "train": "Car"}, {"date": "2026-08-17", "loc": "Hakone", "hotel": "Hakone Ashinoko Hanaori", "address": "Kanagawa, Hakone, Motohakone Togendai 160", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips", "map": "https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt", "restaurants": "", "places": "Lake Ashi; onsen; relax", "distance": "", "train": "Car"}, {"date": "2026-08-18", "loc": "Kyoto", "hotel": "Candeo Hotels Kyoto Karasuma Rokkaku", "address": "Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips", "map": "https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2", "restaurants": "", "places": "Return rental car; travel to Kyoto; check in", "distance": "Hakone → Kyoto ≈ 450 km", "train": "Return car; Shinkansen → Kyoto"}, {"date": "2026-08-19", "loc": "Kyoto", "hotel": "Candeo Hotels Kyoto Karasuma Rokkaku", "address": "Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips", "map": "https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2", "restaurants": "", "places": "Fushimi Inari (mountain of torii gates); Arashiyama Bamboo Forest; Iwatayama Monkey Park (viewpoint over Kyoto)", "distance": "", "train": "Train + walk"}, {"date": "2026-08-20", "loc": "Osaka", "hotel": "The Royal Park Hotel Iconic Osaka Midosuji", "address": "Osaka, Chuo-ku, Hiranomachi 4-2-3", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips", "map": "https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c", "restaurants": "", "places": "Travel to Osaka; check in; Dotonbori", "distance": "Kyoto → Osaka ≈ 55 km", "train": "Train Kyoto → Osaka (~30 min)"}, {"date": "2026-08-21", "loc": "Osaka", "hotel": "The Royal Park Hotel Iconic Osaka Midosuji", "address": "Osaka, Chuo-ku, Hiranomachi 4-2-3", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips", "map": "https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c", "restaurants": "", "places": "Osaka Castle; Umeda / Namba", "distance": "", "train": "Osaka Loop Line"}, {"date": "2026-08-22", "loc": "Osaka", "hotel": "Candeo Hotels Osaka The Tower", "address": "Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips", "map": "https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3", "restaurants": "", "places": "Change hotel to Candeo The Tower; Kuromon Market", "distance": "", "train": "Local"}, {"date": "2026-08-23", "loc": "Osaka", "hotel": "Candeo Hotels Osaka The Tower", "address": "Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips", "map": "https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3", "restaurants": "", "places": "Free day / day trip (e.g. Nara or Kobe)", "distance": "", "train": "Train / local"}, {"date": "2026-08-24", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "Travel to Tokyo; check in Shinjuku (Kabukicho)", "distance": "Osaka → Tokyo ≈ 515 km", "train": "Shinkansen Osaka → Tokyo (~3 h)"}, {"date": "2026-08-25", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-26", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-27", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-28", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-29", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-30", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-08-31", "loc": "Tokyo", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "", "distance": "", "train": "Local (metro / JR)"}, {"date": "2026-09-01", "loc": "Tokyo — Departure", "hotel": "La'gent Hotel Shinjuku Kabukicho", "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS", "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips", "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5", "restaurants": "", "places": "Checkout; travel to airport; fly home", "distance": "Tokyo → airport ≈ 80 km", "train": "Airport transfer"}]}</script>
+
+
 <script>
-const KEY = 'japanTrip_aug2026_v4';
+const KEY = 'japanTrip_aug2026_v5';
 const pad = n => String(n).padStart(2,'0');
 
 /* Real itinerary: 11 Aug – 1 Sep 2026, with hotels */
-const SAMPLE = [
-  {
-    "date": "2026-08-11",
-    "loc": "Tokyo — Arrival",
-    "hotel": "Shibuya Tokyu REI Hotel",
-    "address": "Shibuya-ku, Shibuya 1-24-10",
-    "book": "https://secure.booking.com/mytrips.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&trip_id=304612259722800",
-    "map": "https://www.google.com/maps/place/Shibuya+Tokyu+REI+Hotel/@35.6602274,139.6994128,17z/data=!3m1!5s0x60188b5809a1198d:0xb01df47d527788b7!4m9!3m8!1s0x60188b58080af45d:0xccba35698dd6a64c!5m2!4m1!1i2!8m2!3d35.6602231!4d139.7019877!16s%2Fg%2F1tgkh8g2",
-    "restaurants": "",
-    "places": "Shibuya main street; Shibuya Crossing",
-    "distance": "",
-    "train": "Arrive — airport → Shibuya"
-  },
-  {
-    "date": "2026-08-12",
-    "loc": "Fuji Five Lakes",
-    "hotel": "Kawaguchiko Country Cottage Ban",
-    "address": "Fujikawaguchiko, Kawaguchi 2092",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips",
-    "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2",
-    "restaurants": "",
-    "places": "Pick up rental car (TBD); drive to Kawaguchiko; Chureito Pagoda — ~400 steps to the viewpoint (travel by car from the hotel)",
-    "distance": "Tokyo → Kawaguchiko ≈ 115 km",
-    "train": "Rental car"
-  },
-  {
-    "date": "2026-08-13",
-    "loc": "Fuji Five Lakes",
-    "hotel": "Kawaguchiko Country Cottage Ban",
-    "address": "Fujikawaguchiko, Kawaguchi 2092",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips",
-    "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2",
-    "restaurants": "",
-    "places": "Lake Kawaguchiko area",
-    "distance": "",
-    "train": "Car"
-  },
-  {
-    "date": "2026-08-14",
-    "loc": "Fuji Five Lakes",
-    "hotel": "Kawaguchiko Country Cottage Ban",
-    "address": "Fujikawaguchiko, Kawaguchi 2092",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips",
-    "map": "https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2",
-    "restaurants": "",
-    "places": "Mt Fuji area / free day",
-    "distance": "",
-    "train": "Car"
-  },
-  {
-    "date": "2026-08-15",
-    "loc": "Hakone",
-    "hotel": "Yumoto Station Hotel MIRAHAKONE",
-    "address": "Kanagawa, Hakone, Yumoto 698-10",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=zhaEdLvT1iUM3T9t&source=mytrips",
-    "map": "https://www.google.com/maps/place/Yumoto+Station+Hotel+MIRAHAKONE/@35.2321569,139.0980538,17z/data=!4m11!3m10!1s0x6019a37526d7d6a9:0x7349804654dd0804!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2321526!4d139.1029247!16s%2Fg%2F11g0m56wzk",
-    "restaurants": "",
-    "places": "Drive to Hakone; check in. Owakudani — cable car to the volcanic crater",
-    "distance": "Fuji → Hakone ≈ 60 km",
-    "train": "Car"
-  },
-  {
-    "date": "2026-08-16",
-    "loc": "Hakone",
-    "hotel": "Hakone Ashinoko Hanaori",
-    "address": "Kanagawa, Hakone, Motohakone Togendai 160",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips",
-    "map": "https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt",
-    "restaurants": "",
-    "places": "Change hotel to Hanaori (Lake Ashi / Motohakone); onsen",
-    "distance": "",
-    "train": "Car"
-  },
-  {
-    "date": "2026-08-17",
-    "loc": "Hakone",
-    "hotel": "Hakone Ashinoko Hanaori",
-    "address": "Kanagawa, Hakone, Motohakone Togendai 160",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips",
-    "map": "https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt",
-    "restaurants": "",
-    "places": "Lake Ashi; onsen; relax",
-    "distance": "",
-    "train": "Car"
-  },
-  {
-    "date": "2026-08-18",
-    "loc": "Kyoto",
-    "hotel": "Candeo Hotels Kyoto Karasuma Rokkaku",
-    "address": "Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips",
-    "map": "https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2",
-    "restaurants": "",
-    "places": "Return rental car; travel to Kyoto; check in",
-    "distance": "Hakone → Kyoto ≈ 450 km",
-    "train": "Return car; Shinkansen → Kyoto"
-  },
-  {
-    "date": "2026-08-19",
-    "loc": "Kyoto",
-    "hotel": "Candeo Hotels Kyoto Karasuma Rokkaku",
-    "address": "Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips",
-    "map": "https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2",
-    "restaurants": "",
-    "places": "Fushimi Inari (mountain of torii gates); Arashiyama Bamboo Forest; Iwatayama Monkey Park (viewpoint over Kyoto)",
-    "distance": "",
-    "train": "Train + walk"
-  },
-  {
-    "date": "2026-08-20",
-    "loc": "Osaka",
-    "hotel": "The Royal Park Hotel Iconic Osaka Midosuji",
-    "address": "Osaka, Chuo-ku, Hiranomachi 4-2-3",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips",
-    "map": "https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c",
-    "restaurants": "",
-    "places": "Travel to Osaka; check in; Dotonbori",
-    "distance": "Kyoto → Osaka ≈ 55 km",
-    "train": "Train Kyoto → Osaka (~30 min)"
-  },
-  {
-    "date": "2026-08-21",
-    "loc": "Osaka",
-    "hotel": "The Royal Park Hotel Iconic Osaka Midosuji",
-    "address": "Osaka, Chuo-ku, Hiranomachi 4-2-3",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips",
-    "map": "https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c",
-    "restaurants": "",
-    "places": "Osaka Castle; Umeda / Namba",
-    "distance": "",
-    "train": "Osaka Loop Line"
-  },
-  {
-    "date": "2026-08-22",
-    "loc": "Osaka",
-    "hotel": "Candeo Hotels Osaka The Tower",
-    "address": "Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips",
-    "map": "https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3",
-    "restaurants": "",
-    "places": "Change hotel to Candeo The Tower; Kuromon Market",
-    "distance": "",
-    "train": "Local"
-  },
-  {
-    "date": "2026-08-23",
-    "loc": "Osaka",
-    "hotel": "Candeo Hotels Osaka The Tower",
-    "address": "Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips",
-    "map": "https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3",
-    "restaurants": "",
-    "places": "Free day / day trip (e.g. Nara or Kobe)",
-    "distance": "",
-    "train": "Train / local"
-  },
-  {
-    "date": "2026-08-24",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "Travel to Tokyo; check in Shinjuku (Kabukicho)",
-    "distance": "Osaka → Tokyo ≈ 515 km",
-    "train": "Shinkansen Osaka → Tokyo (~3 h)"
-  },
-  {
-    "date": "2026-08-25",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-26",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-27",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-28",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-29",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-30",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-08-31",
-    "loc": "Tokyo",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "",
-    "distance": "",
-    "train": "Local (metro / JR)"
-  },
-  {
-    "date": "2026-09-01",
-    "loc": "Tokyo — Departure",
-    "hotel": "La'gent Hotel Shinjuku Kabukicho",
-    "address": "Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS",
-    "book": "https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips",
-    "map": "https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5",
-    "restaurants": "",
-    "places": "Checkout; travel to airport; fly home",
-    "distance": "Tokyo → airport ≈ 80 km",
-    "train": "Airport transfer"
-  }
-];
+/* Itinerary seed is embedded in the #tripSeed JSON block below the markup,
+   so exporting a fresh index.html can bake current edits back into the file. */
+function readSeed(){
+  try{ const o=JSON.parse(document.getElementById('tripSeed').textContent);
+    if(Array.isArray(o)) return {savedAt:0, days:o};
+    return {savedAt: o.savedAt||0, days: o.days||[]};
+  }catch(e){ return {savedAt:0, days:[]}; }
+}
+const SEED = readSeed();
+const SAMPLE = SEED.days;
 
 let data = load();
+data.forEach(migratePlaces);
 let viewYear, viewMonth, currentIso = null;
 
 function load(){
-  try{ const s=localStorage.getItem(KEY); if(s) return JSON.parse(s); }catch(e){}
-  return JSON.parse(JSON.stringify(SAMPLE));
+  // Prefer the browser's own saved edits, UNLESS the committed file's embedded
+  // seed is newer (i.e. you edited on your computer and committed a fresh index.html).
+  let ls=null;
+  try{ const s=localStorage.getItem(KEY); if(s) ls=JSON.parse(s); }catch(e){}
+  const seedTime = SEED.savedAt||0;
+  if(ls && Array.isArray(ls.days) && (ls.savedAt||0) >= seedTime) return ls.days;
+  // Seed wins: adopt it as the working copy so later edits build on top of it.
+  const days = JSON.parse(JSON.stringify(SAMPLE));
+  try{ localStorage.setItem(KEY, JSON.stringify({savedAt: seedTime, days})); }catch(e){}
+  return days;
 }
 function save(){
-  try{ localStorage.setItem(KEY, JSON.stringify(data)); flash(); }
+  try{ localStorage.setItem(KEY, JSON.stringify({savedAt: Date.now(), days: data})); flash(); }
   catch(e){ alert('Could not save (private browsing can block storage).'); }
 }
 let flashT;
@@ -578,10 +370,11 @@ function renderCal(){
       const st=stays[idx];
       const hotelTag = d.hotel ? (st? `🏨 ${st.night}/${st.total}n` : '🏨') : '';
       c.classList.add('trip');
+      const hasPlaces = (Array.isArray(d.placeList) && d.placeList.some(p=>p.name&&p.name.trim())) || (d.places&&d.places.trim());
       c.innerHTML=`<div class="dnum">${day}</div>
         <div class="badge">D${idx+1}</div>
         <div class="loc">${escapeHtml(d.loc)}</div>
-        <div class="icons">${hotelTag}${d.places?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}</div>`;
+        <div class="icons">${hotelTag}${hasPlaces?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}</div>`;
       c.onclick=()=>openDetail(iso);
     } else {
       c.classList.add('empty-inmonth');
@@ -593,7 +386,7 @@ function renderCal(){
 }
 
 function addOnDate(iso){
-  data.push({date:iso, loc:"New day", hotel:"", address:"", book:"", map:"", restaurants:"", places:"", distance:"", train:""});
+  data.push({date:iso, loc:"New day", hotel:"", address:"", book:"", map:"", restaurants:"", placeList:[], distance:"", train:""});
   data.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
   save(); renderCal(); openDetail(iso);
 }
@@ -615,12 +408,79 @@ function openDetail(iso){
   document.getElementById('fBook').value=d.book||'';
   document.getElementById('fMap').value=d.map||'';
   document.getElementById('fRest').value=d.restaurants||'';
-  document.getElementById('fPlaces').value=d.places||'';
+  renderPlaces(idx);
   document.getElementById('fDist').value=d.distance||'';
   document.getElementById('fTrain').value=d.train||'';
   document.getElementById('detailOverlay').classList.add('show');
 }
 function closeDetail(){ document.getElementById('detailOverlay').classList.remove('show'); renderCal(); }
+
+/* ---- Places to visit: repeatable {name, map} rows ----
+   Legacy days stored places as one ';'-separated string; migrate that into
+   structured rows the first time a day is opened, so nothing is lost. */
+function migratePlaces(d){
+  if(!Array.isArray(d.placeList)){
+    const rows=[];
+    if(typeof d.places==='string' && d.places.trim()){
+      d.places.split(';').map(s=>s.trim()).filter(Boolean).forEach(name=>rows.push({name, map:''}));
+    }
+    d.placeList=rows;
+  }
+  delete d.places; // single source of truth now
+}
+function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderPlaces(idx){
+  const d=data[idx]; migratePlaces(d);
+  const wrap=document.getElementById('placesList');
+  if(!d.placeList.length){
+    wrap.innerHTML='<div class="places-empty">No places yet — tap “＋ Add place”.</div>';
+    return;
+  }
+  wrap.innerHTML=d.placeList.map((p,i)=>{
+    const hasMap=!!(p.map&&p.map.trim());
+    return `<div class="place-row">
+      <input class="p-name" placeholder="Place name" value="${escAttr(p.name)}"
+        oninput="updatePlace(${i},'name',this.value)">
+      <input class="p-map" placeholder="Google Maps link" value="${escAttr(p.map)}"
+        oninput="updatePlace(${i},'map',this.value)">
+      <button type="button" class="p-open" ${hasMap?'':'disabled'} title="Open in Google Maps"
+        onclick="openPlaceMap(${i})">↗</button>
+      <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+function addPlaceRow(){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  data[idx].placeList.push({name:'', map:''});
+  save(); renderPlaces(idx);
+}
+function updatePlace(i,field,val){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  if(!data[idx].placeList[i]) return;
+  data[idx].placeList[i][field]=val;
+  // keep the ↗ button enabled/disabled state in sync when the link changes
+  if(field==='map'){
+    const btn=document.querySelectorAll('#placesList .place-row')[i]?.querySelector('.p-open');
+    if(btn) btn.disabled=!val.trim();
+  }
+  save();
+}
+function delPlaceRow(i){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  data[idx].placeList.splice(i,1);
+  save(); renderPlaces(idx);
+}
+function openPlaceMap(i){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  let u=(data[idx].placeList[i]?.map||'').trim();
+  if(!u){ return; }
+  if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  window.open(u,'_blank');
+}
 
 function bindField(id,field){
   document.getElementById(id).addEventListener('input',function(){
@@ -634,7 +494,7 @@ function bindField(id,field){
   });
 }
 bindField('fDate','date'); bindField('fLoc','loc'); bindField('fRest','restaurants');
-bindField('fPlaces','places'); bindField('fDist','distance'); bindField('fTrain','train');
+bindField('fDist','distance'); bindField('fTrain','train');
 bindField('fHotel','hotel'); bindField('fAddr','address'); bindField('fBook','book'); bindField('fMap','map');
 document.getElementById('fHotel').addEventListener('input',function(){
   const idx=tripIndex(currentIso); if(idx<0) return;
@@ -671,6 +531,24 @@ function exportData(){
   const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='japan-trip-backup.json'; a.click();
+}
+
+/* ---- Download for Git ----
+   Produces a fresh index.html with your current edits baked into the embedded
+   seed, stamped with "now" so this committed file wins over any older browser copy.
+   Upload the downloaded file to your repo to make the edits the new default. */
+function exportHTML(){
+  save();
+  const clone = document.documentElement.cloneNode(true);
+  const seed = clone.querySelector('#tripSeed');
+  if(seed) seed.textContent = JSON.stringify({savedAt: Date.now(), days: data});
+  const g = clone.querySelector('#grid'); if(g) g.innerHTML='';            // rebuilt on load
+  clone.querySelectorAll('.show').forEach(el=>el.classList.remove('show')); // no open modals
+  const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='index.html'; a.click();
+  setTimeout(()=>alert('Downloaded index.html with your current plan baked in.\n\nUpload/commit this file to your Git repo to make these edits the default everywhere.'), 100);
 }
 function importData(ev){
   const file=ev.target.files[0]; if(!file) return;

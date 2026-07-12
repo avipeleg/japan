@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#991b1b">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%97%BE%3C/text%3E%3C/svg%3E">
+<title>Japan Trip · August 2026</title>
+<style>
+  :root{
+    --red:#b91c1c; --red-dark:#7f1d1d; --ink:#1f2937; --muted:#6b7280;
+    --bg:#f5f5f4; --card:#ffffff; --line:#e7e5e4; --accent:#0e7490;
+    --trip:#fee2e2; --trip-line:#fca5a5; --today:#0e7490; --chip:#f3f4f6;
+    --field:#fbfbfa;
+  }
+  html[data-theme="dark"]{
+    --red:#dc2626; --red-dark:#991b1b; --ink:#e5e7eb; --muted:#9ca3af;
+    --bg:#0f1115; --card:#1b1f27; --line:#333a45; --accent:#22d3ee;
+    --trip:#3a1414; --trip-line:#7f1d1d; --today:#22d3ee; --chip:#252b35;
+    --field:#161a21;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.4; font-size:16px;
+    padding-bottom:90px;
+  }
+  header{
+    position:sticky; top:0; z-index:20;
+    background:linear-gradient(135deg,var(--red),var(--red-dark));
+    color:#fff; padding:14px 14px 10px; box-shadow:0 2px 10px rgba(0,0,0,.15);
+  }
+  .month-nav{display:flex; align-items:center; justify-content:space-between;}
+  .month-nav h1{margin:0; font-size:19px; font-weight:700;}
+  .month-nav button{background:rgba(255,255,255,.16); border:none; color:#fff;
+    width:36px; height:36px; border-radius:10px; font-size:18px; cursor:pointer;}
+  .month-nav button:active{transform:scale(.95);}
+  .sub{font-size:12px; opacity:.9; margin-top:4px; text-align:center;}
+  .toolbar{display:flex; gap:7px; margin-top:10px;}
+  .toolbar button{flex:1; border:none; border-radius:9px; padding:8px 4px;
+    font-size:12px; font-weight:600; background:rgba(255,255,255,.16); color:#fff; cursor:pointer;}
+  .toolbar button:active{transform:scale(.97);}
+
+  main{max-width:820px; margin:0 auto; padding:12px 8px;}
+  .weekdays{display:grid; grid-template-columns:repeat(7,1fr); gap:5px; margin-bottom:5px;}
+  .weekdays div{text-align:center; font-size:11px; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.4px;}
+  .grid{display:grid; grid-template-columns:repeat(7,1fr); gap:5px;}
+  .cell{
+    background:var(--card); border:1px solid var(--line); border-radius:10px;
+    min-height:74px; padding:5px 5px 4px; position:relative; overflow:hidden;
+    display:flex; flex-direction:column; font-size:11px;
+  }
+  .cell.blank{background:transparent; border:none;}
+  .cell .dnum{font-size:12.5px; font-weight:700; color:var(--muted); line-height:1;}
+  .cell.trip{background:var(--trip); border-color:var(--trip-line); cursor:pointer;}
+  .cell.trip .dnum{color:var(--red-dark);}
+  .cell.trip:active{transform:scale(.97);}
+  .cell.empty-inmonth{cursor:pointer;}
+  .cell.empty-inmonth:active{background:#f0fdfa;}
+  .cell .badge{position:absolute; top:4px; right:4px; background:var(--red); color:#fff;
+    font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px;}
+  .cell .loc{margin-top:15px; font-weight:600; color:var(--ink); font-size:10.5px;
+    line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
+  .cell .icons{margin-top:auto; font-size:11px; letter-spacing:1px;}
+  .cell.today{box-shadow:0 0 0 2px var(--today) inset;}
+  .add-plus{position:absolute; bottom:4px; right:6px; color:#0e7490; font-size:15px; opacity:.5;}
+  .legend{display:flex; gap:14px; justify-content:center; margin-top:12px; font-size:12px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:5px;}
+  .swatch{width:14px; height:14px; border-radius:4px; background:var(--trip); border:1px solid var(--trip-line);}
+
+  /* Detail overlay */
+  .overlay{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:40; display:none;}
+  .overlay.show{display:block;}
+  .sheet{
+    position:absolute; left:0; right:0; bottom:0; max-height:92vh; overflow-y:auto;
+    background:var(--card); border-radius:18px 18px 0 0; padding:0 0 30px;
+    max-width:820px; margin:0 auto; animation:slideup .22s ease;
+  }
+  @keyframes slideup{from{transform:translateY(30px);} to{transform:none;}}
+  .sheet-head{position:sticky; top:0; background:var(--red); color:#fff;
+    padding:14px 16px; border-radius:18px 18px 0 0; display:flex; align-items:center; gap:10px;}
+  .sheet-head .nav{background:rgba(255,255,255,.18); border:none; color:#fff;
+    width:34px; height:34px; border-radius:9px; font-size:17px; cursor:pointer;}
+  .sheet-head .title{flex:1; min-width:0;}
+  .sheet-head .title .t1{font-weight:700; font-size:16px;}
+  .sheet-head .title .t2{font-size:12px; opacity:.9;}
+  .sheet-head .close{background:rgba(255,255,255,.18); border:none; color:#fff;
+    width:34px; height:34px; border-radius:9px; font-size:16px; cursor:pointer;}
+  .sheet-body{padding:6px 16px 0;}
+  .field{margin-top:14px;}
+  .field label{display:block; font-size:11.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.5px; color:var(--muted); margin-bottom:5px;}
+  .field input, .field textarea{width:100%; border:1px solid var(--line); border-radius:9px;
+    padding:10px; font-size:15px; font-family:inherit; color:var(--ink); background:var(--field);}
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--accent); background:var(--card);}
+  .field textarea{resize:vertical; min-height:64px;}
+  .del-day{background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:9px;
+    padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer; margin-top:18px;}
+  .linkrow{display:flex; gap:8px;}
+  .linkrow input{flex:1;}
+  .linkbtn{flex:0 0 auto; border:none; background:var(--accent); color:#fff; border-radius:9px;
+    padding:0 14px; font-size:13px; font-weight:700; cursor:pointer;}
+  .linkbtn:active{transform:scale(.96);}
+
+  .ai-fab{position:fixed; right:16px; bottom:18px; z-index:30; background:var(--accent);
+    color:#fff; border:none; border-radius:50px; padding:14px 20px; font-size:15px;
+    font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);}
+  .modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
+    display:none; align-items:flex-end; justify-content:center;}
+  .modal-bg.show{display:flex;}
+  .modal{background:var(--card); width:100%; max-width:760px; border-radius:18px 18px 0 0;
+    padding:18px 16px 22px; animation:slideup .22s ease;}
+  .modal h2{margin:0 0 4px; font-size:17px;}
+  .modal p{margin:0 0 12px; font-size:13px; color:var(--muted);}
+  .modal textarea{width:100%; min-height:110px; border:1px solid var(--line); border-radius:12px;
+    padding:12px; font-size:15px; font-family:inherit; resize:vertical;}
+  .ai-btns{display:flex; gap:10px; margin-top:12px;}
+  .ai-btns button{flex:1; border:none; border-radius:12px; padding:13px; font-size:15px;
+    font-weight:700; color:#fff; cursor:pointer;}
+  .btn-claude{background:#d97706;} .btn-gemini{background:#2563eb;}
+  .btn-close{background:none; border:none; color:var(--muted); font-size:14px; margin-top:12px;
+    width:100%; padding:6px; cursor:pointer;}
+  .quick{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+  .quick span{background:var(--chip); border:1px solid var(--line); border-radius:20px;
+    padding:6px 11px; font-size:12.5px; cursor:pointer;}
+  .saved-flash{position:fixed; top:64px; left:50%; transform:translateX(-50%);
+    background:#111827; color:#fff; padding:8px 16px; border-radius:20px; font-size:13px;
+    z-index:60; opacity:0; transition:opacity .2s; pointer-events:none;}
+  .saved-flash.show{opacity:.92;}
+  input[type=file]{display:none;}
+  .toolbar{display:flex; flex-wrap:wrap; gap:8px; justify-content:center; align-items:center; margin-top:18px;}
+  .toolbar .tb-primary{border:none; background:var(--accent); color:#fff; font-weight:700;
+    padding:10px 16px; border-radius:10px; cursor:pointer; font-size:14px;}
+  .toolbar .tb-primary:hover{filter:brightness(1.08);}
+  .toolbar .tb{border:1px solid var(--line); background:var(--card); color:#374151;
+    padding:9px 13px; border-radius:10px; cursor:pointer; font-size:13px;}
+  .toolbar .tb:hover{border-color:var(--accent); color:var(--accent);}
+  .toolbar-hint{text-align:center; font-size:12px; color:var(--muted); margin-top:8px; line-height:1.5;}
+  .toolbar-hint code{background:var(--line); padding:1px 5px; border-radius:4px;}
+  .places-list{display:flex; flex-direction:column; gap:10px;}
+  .place-card{border:1px solid var(--line); border-radius:10px; background:var(--field); padding:8px;}
+  .place-card.sortable-ghost{opacity:.4;}
+  .place-card.sortable-chosen{box-shadow:0 2px 8px rgba(0,0,0,.12);}
+  .place-row{display:flex; gap:6px; align-items:center;}
+  .place-row + .place-row{margin-top:6px;}
+  .place-row .p-handle{flex:0 0 auto; width:30px; height:34px; display:flex; align-items:center;
+    justify-content:center; font-size:17px; color:var(--muted); cursor:grab; touch-action:none;
+    border-radius:8px;}
+  .place-row .p-handle:active{cursor:grabbing; background:var(--line);}
+  .place-row .p-name{flex:1 1 auto; min-width:0;}
+  .place-row .p-map{flex:1 1 auto; min-width:0;}
+  .place-row input, .place-row textarea{width:100%; box-sizing:border-box; border:1px solid var(--line); border-radius:8px;
+    padding:8px 9px; font-size:13.5px; background:var(--field); font-family:inherit;}
+  .place-row input:focus, .place-row textarea:focus{outline:none; border-color:var(--accent); background:var(--card);}
+  .place-row .p-open,.place-row .p-del{flex:0 0 auto; border:none; cursor:pointer; border-radius:8px;
+    width:34px; height:34px; font-size:14px; line-height:1;}
+  .place-row .p-open{background:var(--accent); color:#fff;}
+  .place-row .p-open:disabled{background:var(--line); color:#a8a29e; cursor:not-allowed;}
+  .place-row .p-del{background:#fee2e2; color:#b91c1c;}
+  .p-notes{margin-top:6px;}
+  .p-notes textarea{min-height:44px; resize:vertical; color:var(--ink);}
+  .p-notes textarea::placeholder{color:#a8a29e;}
+  .add-place{margin-top:9px; border:1px dashed var(--accent); background:transparent; color:var(--accent);
+    font-weight:600; padding:8px 12px; border-radius:9px; cursor:pointer; font-size:13px;}
+  .add-place:hover{background:var(--accent); color:#fff;}
+  .places-empty{font-size:12.5px; color:var(--muted); padding:2px;}
+  .today-fab{position:fixed; left:16px; bottom:18px; z-index:30; background:var(--red);
+    color:#fff; border:none; border-radius:50px; padding:14px 18px; font-size:14px;
+    font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);}
+
+  /* Header icon toggles (view mode + theme) */
+  .htoggle{background:rgba(255,255,255,.16); border:none; color:#fff;
+    width:36px; height:36px; border-radius:10px; font-size:16px; cursor:pointer;}
+  .htoggle:active{transform:scale(.95);}
+  .head-actions{display:flex; gap:6px; align-items:center;}
+
+  /* Agenda (list) view */
+  .agenda{display:flex; flex-direction:column; gap:10px;}
+  .agenda-card{background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:12px 13px; cursor:pointer; position:relative; box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .agenda-card:active{transform:scale(.995);}
+  .agenda-card.today{box-shadow:0 0 0 2px var(--today) inset;}
+  .agenda-card .a-top{display:flex; align-items:baseline; gap:8px;}
+  .agenda-card .a-day{font-size:12px; font-weight:800; color:var(--red); letter-spacing:.3px;}
+  .agenda-card .a-date{font-size:11.5px; color:var(--muted); margin-left:auto;}
+  .agenda-card .a-loc{font-size:16px; font-weight:700; margin:3px 0 2px; color:var(--ink);}
+  .agenda-card .a-hotel{font-size:12.5px; color:var(--muted);}
+  .agenda-card .a-icons{margin-top:7px; font-size:13px; letter-spacing:2px;}
+  .agenda-card .a-chevron{position:absolute; right:12px; top:50%; transform:translateY(-50%);
+    color:var(--muted); font-size:18px;}
+
+  /* Print / PDF output (hidden on screen, shown only when printing) */
+  #printArea{display:none;}
+  @media print{
+    /* Remove all on-screen UI from layout so there are no blank pages,
+       and print only the full-trip summary. */
+    body > *:not(#printArea){display:none !important;}
+    body{padding:0 !important;}
+    #printArea{display:block; width:100%; padding:0;}
+    #printArea h1{font-size:18px; margin:0 0 12px;}
+    .print-day{page-break-inside:avoid; border-bottom:1px solid #ddd; padding:10px 0; margin-bottom:6px;}
+    .print-day h2{margin:0 0 4px; font-size:15px; color:#b91c1c;}
+    .print-day p{margin:2px 0; font-size:12px; line-height:1.4;}
+    .pp-item{margin:4px 0 4px 10px;}
+    .pp-name{font-size:12px; font-weight:700;}
+    .pp-link{font-size:10px; color:#2563eb; word-break:break-all;}
+    .pp-notes{font-size:11px; color:#374151; font-style:italic;}
+  }
+</style>
+</head>
+<body style="">
+<header>
+  <div class="month-nav">
+    <button onclick="changeMonth(-1)" id="prevBtn" style="visibility: hidden;">‹</button>
+    <h1 id="monthTitle">Full Itinerary</h1>
+    <div class="head-actions">
+      <button class="htoggle" id="viewToggle" onclick="toggleView()" title="Calendar view">📅</button>
+      <button class="htoggle" id="themeToggle" onclick="toggleTheme()" title="Light mode">☀️</button>
+      <button onclick="changeMonth(1)" id="nextBtn" style="visibility: hidden;">›</button>
+    </div>
+  </div>
+  <div class="sub" id="headerSub">🗾 22-Day Japan Trip · tap a day to open &amp; edit</div>
+</header>
+
+<main>
+  <div id="calView" style="display: none;">
+    <div class="weekdays">
+      <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </div>
+  <div id="agendaView" class="agenda" style="display: flex;"></div>
+  <div class="legend" id="legend" style="display: none;">
+    <span><span class="swatch"></span> Trip day (tap to edit)</span>
+    <span>＋ Empty day (tap to add)</span>
+  </div>
+
+  <div class="toolbar">
+    <button class="tb-primary" onclick="exportHTML()">⬇️ Download for Git</button>
+    <button class="tb" onclick="exportPDF()">📄 Download PDF (whole trip)</button>
+    <button class="tb" onclick="exportData()">Backup (.json)</button>
+    <label class="tb" style="cursor:pointer;">Restore
+      <input type="file" accept="application/json" onchange="importData(event)" style="display:none;">
+    </label>
+    <button class="tb" onclick="resetData()">Reset</button>
+  </div>
+  <div class="toolbar-hint">Edit your days above, then <b>Download for Git</b> → commit the new <code>index.html</code> to your repo to make it the default everywhere.<br>
+  <b>PDF</b> opens your browser's print dialog — choose “Save as PDF” to export every day.</div>
+</main>
+
+<!-- Printable summary, built on demand by exportPDF(); invisible on screen -->
+<div id="printArea"></div>
+
+<!-- Day detail sheet -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <button class="nav" onclick="navDay(-1)">‹</button>
+      <div class="title"><div class="t1" id="dTitle">Day 5</div><div class="t2" id="dDate">Saturday, 15 August 2026</div></div>
+      <button class="nav" onclick="navDay(1)">›</button>
+      <button class="close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="field">
+        <label>📅 Date</label>
+        <input type="date" id="fDate">
+      </div>
+      <div class="field">
+        <label>📍 Location</label>
+        <input type="text" id="fLoc" placeholder="e.g. Kyoto — East">
+      </div>
+      <div class="field">
+        <label>🏨 Hotel</label>
+        <input type="text" id="fHotel" placeholder="Hotel name">
+        <div id="fNights" style="font-size:12.5px; color:var(--accent); font-weight:600; margin-top:5px;">🌙 Night 1 of 1 at this hotel</div>
+      </div>
+      <div class="field">
+        <label>🏠 Address</label>
+        <input type="text" id="fAddr" placeholder="Street address">
+      </div>
+      <div class="field">
+        <label>🔗 Booking link</label>
+        <div class="linkrow">
+          <input type="text" id="fBook" placeholder="https://...">
+          <button class="linkbtn" onclick="openLink('fBook')">Open ↗</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>🗺️ Map / directions</label>
+        <div class="linkrow">
+          <input type="text" id="fMap" placeholder="https://maps.google.com/...">
+          <button class="linkbtn" onclick="openLink('fMap')">Open ↗</button>
+        </div>
+      </div>
+      <div class="field">
+        <label>🍜 Restaurants</label>
+        <textarea id="fRest" placeholder="Places to eat..." style="margin-top: 0px; margin-bottom: 0px; height: 76px;"></textarea>
+      </div>
+      <div class="field">
+        <label>🗻 Places to visit</label>
+        <div id="placesList" class="places-list"><div class="place-card" data-i="0">
+      <div class="place-row">
+        <span class="p-handle" title="Drag to reorder">⠿</span>
+        <input class="p-name" placeholder="Place name" value="Drive to Hakone - 1.5 Hours" oninput="updatePlace(0,'name',this.value)">
+      </div>
+      <div class="place-row">
+        <input class="p-map" placeholder="Google Maps link" value="https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&amp;g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D" oninput="updatePlace(0,'map',this.value)">
+        <button type="button" class="p-open" title="Open in Google Maps" onclick="openPlaceMap(0)">↗</button>
+        <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(0)">✕</button>
+      </div>
+      <div class="place-row p-notes">
+        <textarea placeholder="Notes (hours, tips, tickets...)" oninput="updatePlace(0,'notes',this.value)"></textarea>
+      </div>
+    </div><div class="place-card" data-i="1">
+      <div class="place-row">
+        <span class="p-handle" title="Drag to reorder">⠿</span>
+        <input class="p-name" placeholder="Place name" value="Gotemba premium outlets shizuoka japan - Outlet (recommened) " oninput="updatePlace(1,'name',this.value)">
+      </div>
+      <div class="place-row">
+        <input class="p-map" placeholder="Google Maps link" value="https://www.google.com/maps/dir/Hakone,+Ashigarashimo+District,+Kanagawa,+Japan/Gotemba+Premium+Outlets,+1312+Fukasawa,+Gotemba,+Shizuoka+412-0023,+Japan/@35.3014886,138.9779854,12z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x6019a20c60b2dc7b:0x2605bd17ac977b26!2m2!1d139.1088454!2d35.2337691!1m5!1m1!1s0x601975df174819d7:0x50b0b54408d32384!2m2!1d138.9656467!2d35.307271!3e0?entry=ttu&amp;g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D" oninput="updatePlace(1,'map',this.value)">
+        <button type="button" class="p-open" title="Open in Google Maps" onclick="openPlaceMap(1)">↗</button>
+        <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(1)">✕</button>
+      </div>
+      <div class="place-row p-notes">
+        <textarea placeholder="Notes (hours, tips, tickets...)" oninput="updatePlace(1,'notes',this.value)">Distance: 40 minutes from Hakone or 1.30 hours from Tokyo.</textarea>
+      </div>
+    </div><div class="place-card" data-i="2">
+      <div class="place-row">
+        <span class="p-handle" title="Drag to reorder">⠿</span>
+        <input class="p-name" placeholder="Place name" value="The Hakone Open Air Museum " oninput="updatePlace(2,'name',this.value)">
+      </div>
+      <div class="place-row">
+        <input class="p-map" placeholder="Google Maps link" value="https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&amp;g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D" oninput="updatePlace(2,'map',this.value)">
+        <button type="button" class="p-open" title="Open in Google Maps" onclick="openPlaceMap(2)">↗</button>
+        <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(2)">✕</button>
+      </div>
+      <div class="place-row p-notes">
+        <textarea placeholder="Notes (hours, tips, tickets...)" oninput="updatePlace(2,'notes',this.value)"></textarea>
+      </div>
+    </div></div>
+        <button type="button" class="add-place" onclick="addPlaceRow()">＋ Add place</button>
+      </div>
+      <div class="field">
+        <label>📏 Distance</label>
+        <input type="text" id="fDist" placeholder="e.g. Kyoto → Osaka ≈ 55 km">
+      </div>
+      <div class="field">
+        <label>🚆 Transport — train</label>
+        <input type="text" id="fTrain" placeholder="e.g. JR Special Rapid ~30 min">
+      </div>
+      <button class="del-day" onclick="delCurrent()">Delete this day</button>
+    </div>
+  </div>
+</div>
+
+<!-- Jump to today -->
+<button class="today-fab" onclick="jumpToday()">📍 Today</button>
+
+<!-- Ask AI -->
+<button class="ai-fab" onclick="openAI()">🤖 Ask AI</button>
+<div class="modal-bg" id="aiModal">
+  <div class="modal">
+    <h2>Ask Claude or Gemini</h2>
+    <p>Type your question, then choose an assistant. It opens in a new tab with your question ready —
+      signed in with whichever account you're already logged into (your Claude Pro or your Google account).</p>
+    <textarea id="aiPrompt" placeholder="e.g. Suggest a vegetarian dinner near Gion in Kyoto..."></textarea>
+    <div class="quick">
+      <span onclick="quick('Suggest 3 great restaurants near ')">Restaurants near…</span>
+      <span onclick="quick('What are the must-see spots in ')">Must-see in…</span>
+      <span onclick="quick('Best way to travel by train from ')">Train route…</span>
+      <span onclick="quick('Give me a rainy-day plan for ')">Rainy day…</span>
+    </div>
+    <div class="ai-btns">
+      <button class="btn-claude" onclick="askAI('claude')">Ask Claude ↗</button>
+      <button class="btn-gemini" onclick="askAI('gemini')">Ask Gemini ↗</button>
+    </div>
+    <button class="btn-close" onclick="closeAI()">Cancel</button>
+  </div>
+</div>
+
+<div class="saved-flash" id="flash">Saved ✓</div>
+
+<script type="application/json" id="tripSeed">{"savedAt":1783886463833,"days":[{"date":"2026-08-11","loc":"Tokyo — Arrival","hotel":"Shibuya Tokyu REI Hotel","address":"Shibuya-ku, Shibuya 1-24-10","book":"https://secure.booking.com/mytrips.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&trip_id=304612259722800","map":"https://www.google.com/maps/place/Shibuya+Tokyu+REI+Hotel/@35.6602274,139.6994128,17z/data=!3m1!5s0x60188b5809a1198d:0xb01df47d527788b7!4m9!3m8!1s0x60188b58080af45d:0xccba35698dd6a64c!5m2!4m1!1i2!8m2!3d35.6602231!4d139.7019877!16s%2Fg%2F1tgkh8g2","restaurants":"Kaiten Zushi - sushi.\nUobei Shibuya Dogenzaka - sushi ","distance":"From aireport  NRT to Hotel - Nartia express (NEX)","train":"Arrive — airport → Shibuya - Nartia express (NEX).  Drop off Shibuya station. ","placeList":[{"name":"Shibuya Crossing","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Shibuya+Crossing,+Shibuya,+Tokyo,+Japan/@35.6596834,139.6987425,17z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x60188bcaeb0cd12b:0x20e563a2e0aec969!2m2!1d139.7005596!2d35.659482!3e2?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Starbucks ","map":""}]},{"date":"2026-08-12","loc":"Fuji Five Lakes","hotel":"Kawaguchiko Country Cottage Ban","address":"Fujikawaguchiko, Kawaguchi 2092","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips","map":"https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2","restaurants":"","distance":"Tokyo → Kawaguchiko ≈ 115 km","train":"Rental car","placeList":[{"name":"Pick up rental car (TBD) - Check for ETC card - Toll","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/〒150-0002+Tokyo,+Shibuya,+3-chōme%E2%88%921+ゾンネンハイム渋谷,+Japan/@35.6590818,139.7020752,17z/data=!3m2!4b1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x60188b5c1df572c7:0x3a9be490744df890!2m2!1d139.7073125!2d35.6577948!3e2?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Three hours drive to Kawaguchiko - Narusawa Ice Cave","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"","map":""}]},{"date":"2026-08-13","loc":"Fuji Five Lakes","hotel":"Kawaguchiko Country Cottage Ban","address":"Fujikawaguchiko, Kawaguchi 2092","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips","map":"https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2","restaurants":"","distance":"","train":"Car","placeList":[{"name":"Chureito Pagoda — ~400 steps to the viewpoint (travel by car from the hotel)","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Oishi Park ","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"NRT International Airport ","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"}]},{"date":"2026-08-14","loc":"Fuji Five Lakes","hotel":"Kawaguchiko Country Cottage Ban","address":"Fujikawaguchiko, Kawaguchi 2092","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=4yzF875Pzuh3etSv&source=mytrips","map":"https://www.google.com/maps/place/Kawaguchiko+Country+Cottage+Ban/@35.5315565,138.7618964,17z/data=!4m11!3m10!1s0x60195e567f985775:0x2af96d1e9f830d1b!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.5315522!4d138.7644713!16s%2Fg%2F1thsfzt2","restaurants":"","distance":"","train":"Car","placeList":[{"name":"E-Bike from Kawaguchiko Station Area. Ride from Ohashi Bridge (Oishi Park)","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Mt. Fuji Panoramic Ropeway - Cable car ","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Ensoleille Excursion Ship Pleasure Boat Kawaguchiko","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"}]},{"date":"2026-08-15","loc":"Hakone","hotel":"Yumoto Station Hotel MIRAHAKONE","address":"Kanagawa, Hakone, Yumoto 698-10","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=zhaEdLvT1iUM3T9t&source=mytrips","map":"https://www.google.com/maps/place/Yumoto+Station+Hotel+MIRAHAKONE/@35.2321569,139.0980538,17z/data=!4m11!3m10!1s0x6019a37526d7d6a9:0x7349804654dd0804!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2321526!4d139.1029247!16s%2Fg%2F11g0m56wzk","restaurants":"Miyafuji  - 310 Miyanoshita Hakone","distance":"Fuji → Hakone ≈ 60 km","train":"Car","placeList":[{"name":"Drive to Hakone - 1.5 Hours","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D"},{"name":"Gotemba premium outlets shizuoka japan - Outlet (recommened) ","map":"https://www.google.com/maps/dir/Hakone,+Ashigarashimo+District,+Kanagawa,+Japan/Gotemba+Premium+Outlets,+1312+Fukasawa,+Gotemba,+Shizuoka+412-0023,+Japan/@35.3014886,138.9779854,12z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x6019a20c60b2dc7b:0x2605bd17ac977b26!2m2!1d139.1088454!2d35.2337691!1m5!1m1!1s0x601975df174819d7:0x50b0b54408d32384!2m2!1d138.9656467!2d35.307271!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Distance: 40 minutes from Hakone or 1.30 hours from Tokyo."},{"name":"The Hakone Open Air Museum ","map":"https://www.google.com/maps/dir/Shibuya+Tokyu+REI+Hotel,+1+Chome-24-10+Shibuya,+Tokyo+150-0002,+Japan/Narusawa+Ice+Cave,+8533+鳴沢+Narusawa,+Minamitsuru+District,+Yamanashi+401-0320,+Japan/@35.5677538,138.8538293,10z/data=!3m1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188b58080af45d:0xccba35698dd6a64c!2m2!1d139.7019877!2d35.6602231!1m5!1m1!1s0x601be06d335ae1d3:0x6fd1c75103311772!2m2!1d138.6669694!2d35.4749276!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":""}]},{"date":"2026-08-16","loc":"Hakone","hotel":"Hakone Ashinoko Hanaori","address":"Kanagawa, Hakone, Motohakone Togendai 160","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips","map":"https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt","restaurants":"","distance":"","train":"Car","placeList":[{"name":"Change hotel to Hanaori (Lake Ashi / Motohakone)","map":""},{"name":"Tenzan Onsen ","map":"https://www.google.com/maps/dir/698-10+Yumoto,+Hakone,+Kanagawa,+Japan/Ryuguden+Honkan,+139+Motohakone,+Hakone,+Ashigarashimo+District,+Kanagawa+250-0522,+Japan/@35.6919184,139.6925271,16z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m14!4m13!1m5!1m1!1s0x6019a375215bbd11:0x67c7350eb3721f58!2m2!1d139.1029247!2d35.2321526!1m5!1m1!1s0x601998ef545f8519:0xb9ac17a087a75b15!2m2!1d139.0113146!2d35.2103721!3e3?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Distance: 10 minutes from the hotel. \nMan and Women is separate. "},{"name":"Hakone Yuryo public onsen ","map":"https://www.google.com/maps/dir/698-10+Yumoto,+Hakone,+Kanagawa,+Japan/Ryuguden+Honkan,+139+Motohakone,+Hakone,+Ashigarashimo+District,+Kanagawa+250-0522,+Japan/@35.6919184,139.6925271,16z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m14!4m13!1m5!1m1!1s0x6019a375215bbd11:0x67c7350eb3721f58!2m2!1d139.1029247!2d35.2321526!1m5!1m1!1s0x601998ef545f8519:0xb9ac17a087a75b15!2m2!1d139.0113146!2d35.2103721!3e3?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Distance: 5 minutes by car from the hotel. "}]},{"date":"2026-08-17","loc":"Hakone","hotel":"Hakone Ashinoko Hanaori","address":"Kanagawa, Hakone, Motohakone Togendai 160","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=pMVB4NCV8pgKimcT&source=mytrips","map":"https://www.google.com/maps/place/Hanaori/@35.2376303,138.9948797,17z/data=!4m11!3m10!1s0x60199ed9c390b5cf:0x84b30cd0bf23f2f3!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.2376259!4d138.9974546!16s%2Fg%2F11g6xwdckt","restaurants":"","distance":"","train":"Car","placeList":[{"name":"Lake Ashi","map":""},{"name":"onsen","map":""},{"name":"relax","map":""}]},{"date":"2026-08-18","loc":"Kyoto","hotel":"Candeo Hotels Kyoto Karasuma Rokkaku","address":"Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips","map":"https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2","restaurants":"","distance":"Hakone → Kyoto ≈ 450 km","train":"Return car; Shinkansen → Kyoto","placeList":[{"name":"Pontocho Alley - Gion (Geisha) and Dinner","map":"https://www.google.com/maps/dir/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku,+Japan,+〒604-8164+Kyoto,+Nakagyo+Ward,+六角通+烏丸西入骨屋町１４９/Pontocho+Alley,+Nakagyo+Ward,+Kyoto,+604-8014,+Japan/@35.0055086,135.7598309,16z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x600108852945704b:0xf0d501be08e864b7!2m2!1d135.7589176!2d35.0072717!1m5!1m1!1s0x6001091894db603f:0xaa4fd64b17e50202!2m2!1d135.7710439!2d35.0039339!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Place with Geisha and dinner."}]},{"date":"2026-08-19","loc":"Kyoto","hotel":"Candeo Hotels Kyoto Karasuma Rokkaku","address":"Kyoto, Nakagyo-ku Rokkaku-dori Karasuma-nishiiru Honeya-cho 149","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=DokwXpICitIq9JmC&source=mytrips","map":"https://www.google.com/maps/place/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku/@35.0072761,135.7563427,17z/data=!4m11!3m10!1s0x600108852945704b:0xf0d501be08e864b7!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.0072717!4d135.7589176!16s%2Fg%2F11mhxkw_w2","restaurants":"","distance":"","train":"Train + walk","placeList":[{"name":"Fushimi Inari (mountain of torii gates)","map":"https://www.google.com/maps/dir/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku,+Japan,+〒604-8164+Kyoto,+Nakagyo+Ward,+六角通+烏丸西入骨屋町１４９/Senbon+Torii+(Thousand+Torii+Gates),+68番地+Fukakusa+Yabunouchicho,+Fushimi+Ward,+Kyoto,+612-0882,+Japan/@34.9851838,135.746189,14z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x600108852945704b:0xf0d501be08e864b7!2m2!1d135.7589176!2d35.0072717!1m5!1m1!1s0x60010f14384c5a19:0x5d22970f58bfde17!2m2!1d135.7746595!2d34.9670429!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Fushimi Inari is the most important of several thousands of shrines dedicated to Inari,\nDistance: 20 minutes from the hotel \nYou should budget between 2 to 3 hours for a full experience"},{"name":"Arashiyama Bamboo Forest","map":"https://www.google.com/maps/dir/CANDEO+HOTELS+Kyoto+Karasuma+Rokkaku,+Japan,+〒604-8164+Kyoto,+Nakagyo+Ward,+六角通+烏丸西入骨屋町１４９/Arashiyama+Bamboo+Forest,+Sagaogurayama+Tabuchiyamacho,+Ukyo+Ward,+Kyoto,+616-8394,+Japan/@35.0115718,135.6743132,13z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x600108852945704b:0xf0d501be08e864b7!2m2!1d135.7589176!2d35.0072717!1m5!1m1!1s0x6001abebbf5c8bad:0xfb9ffc7bbdd67cdd!2m2!1d135.6713013!2d35.0168187!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Bamboo Forest - Time Needed: Walking the main path takes roughly 15 to 20 minutes at a leisurely pace\nDistance: 20 minutes from the hotel. Best hours 17:30 (sunset)"}]},{"date":"2026-08-20","loc":"Osaka","hotel":"The Royal Park Hotel Iconic Osaka Midosuji","address":"Osaka, Chuo-ku, Hiranomachi 4-2-3","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips","map":"https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c","restaurants":"","distance":"Kyoto → Osaka ≈ 55 km","train":"Train Kyoto → Osaka (~30 min)","placeList":[{"name":"Travel to Osaka ","map":"https://www.google.com/maps/dir/Honeya,+賀陽コーポラス+1003号+3番地20+Mibukayogoshocho,+Nakagyo+Ward,+Kyoto,+604-8811,+Japan/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji,+15F+4+Chome-2-3+Hiranomachi,+Chuo+Ward,+Osaka,+541-0046,+Japan/@34.8406552,135.4403139,11z/data=!3m2!4b1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m14!4m13!1m5!1m1!1s0x6001076b68f0c3f9:0x450d4a35f6aaa288!2m2!1d135.747136!2d35.0034891!1m5!1m1!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!2m2!1d135.4999413!2d34.6871762!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"One hour driving to the hotel"},{"name":"","map":""}]},{"date":"2026-08-21","loc":"Osaka","hotel":"The Royal Park Hotel Iconic Osaka Midosuji","address":"Osaka, Chuo-ku, Hiranomachi 4-2-3","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=QBwH2Ih2Lh9PAfUy&source=mytrips","map":"https://www.google.com/maps/place/The+Royal+Park+Hotel+Iconic+Osaka-Midosuji/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m11!3m10!1s0x6000e73c37fe5847:0x4d5a43ffe354de2c!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d34.6871762!4d135.4999413!16s%2Fg%2F11flt09q1c","restaurants":"","distance":"","train":"Osaka Loop Line","placeList":[{"name":"Osaka Castle","map":""},{"name":"Umeda / Namba","map":""}]},{"date":"2026-08-22","loc":"Osaka","hotel":"Candeo Hotels Osaka The Tower","address":"Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips","map":"https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3","restaurants":"","distance":"","train":"Local","placeList":[{"name":"Change hotel to Candeo The Tower","map":""},{"name":"Kuromon Market","map":""}]},{"date":"2026-08-23","loc":"Osaka","hotel":"Candeo Hotels Osaka The Tower","address":"Osaka, Dojimahama 1-1-2 · Price: 2,470 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=lnzXDikelnGlnewh&source=mytrips","map":"https://www.google.com/maps/search/Candeo+Hotels+Osaka+The+Tower/@34.6871806,135.4973664,17z/data=!3m1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m5!2m4!5m3!5m2!1s2026-08-09!2i3","restaurants":"","distance":"","train":"Train / local","placeList":[{"name":"Free day / day trip (e.g. Nara or Kobe)","map":""}]},{"date":"2026-08-24","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"Osaka → Tokyo ≈ 515 km","train":"Shinkansen Osaka → Tokyo (~3 h)","placeList":[{"name":"Travel to Tokyo","map":""},{"name":"check in Shinjuku (Kabukicho)","map":""}]},{"date":"2026-08-25","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[]},{"date":"2026-08-26","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[]},{"date":"2026-08-27","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[]},{"date":"2026-08-28","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[]},{"date":"2026-08-29","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[{"name":"Asakusa - Kitchen street","map":"https://www.google.com/maps/dir/La'gent+Hotel+Shinjuku+Kabukicho,+2+Chome-40-5+Kabukicho,+Shinjuku+City,+Tokyo+160-0021,+Japan/Asakusa,+Taito+City,+Tokyo+111-0032,+Japan/@35.701153,139.703126,13z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!2m2!1d139.7019559!2d35.6974857!1m5!1m1!1s0x60188ec2047f5333:0x7c84fd3881c74067!2m2!1d139.7958849!2d35.7185858!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"Asakusa - high-quality Japanese kitchen knives is Kappabashi Dougu Street.\nStores: Kama-Asa, Tsubaya, Kamata Hakensha, Tojiro Knife Gallery Tokyo"},{"name":"Shin-Nakamise - shopping street ","map":"https://www.google.com/maps/dir/La'gent+Hotel+Shinjuku+Kabukicho,+2+Chome-40-5+Kabukicho,+Shinjuku+City,+Tokyo+160-0021,+Japan/Asakusa+Shin-Nakamise+Shopping+Street,+1+Chome-39-2+Asakusa,+Taito+City,+Tokyo+111-0032,+Japan/@35.699299,139.7027278,13z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!2m2!1d139.7019559!2d35.6974857!1m5!1m1!1s0x60188ec0eaa85805:0x51bdebd5081332d1!2m2!1d139.7944908!2d35.7121273!3e0?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":""}]},{"date":"2026-08-30","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[{"name":"Don Kihote - Outlate ","map":"https://www.google.com/maps/dir/2-chōme-40-5+Kabukichō,+Shinjuku+City,+Tokyo+160-0021,+Japan/Don+Quijote+Shinjuku+Kabukicho,+1+Chome-16-5+Kabukicho,+Shinjuku+City,+Tokyo+160-0021,+Japan/@35.6956262,139.6994669,17z/data=!3m2!4b1!5s0x60188cd9dbf05cd7:0x64f4dd04bd5a6f3c!4m14!4m13!1m5!1m1!1s0x60188d27f016a0ab:0x2abd75848dcf92ae!2m2!1d139.7020286!2d35.6974682!1m5!1m1!1s0x60188cd9dbeab93d:0x8583055007d02928!2m2!1d139.7017873!2d35.6937755!3e2?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":""}]},{"date":"2026-08-31","loc":"Tokyo","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"","train":"Local (metro / JR)","placeList":[{"name":"Tokyo Metropolitan Government Building","map":"https://www.google.com/maps/dir/Shinjuku+Subnade+Building,+1-chōme-2+Kabukichō,+Shinjuku+City,+Tokyo+160-0021,+Japan/Tokyo+Metropolitan+Government+Building,+2+Chome-8-1+Nishishinjuku,+Shinjuku+City,+Tokyo+163-8001,+Japan/@35.6919184,139.6925271,16z/data=!3m2!4b1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m14!4m13!1m5!1m1!1s0x60188cd9820df8cb:0x457c9045960ddca1!2m2!1d139.7038532!2d35.6934794!1m5!1m1!1s0x60188cd4b71a37a1:0xf1665c37f38661e8!2m2!1d139.6916863!2d35.6894807!3e3?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"20 minutes walking from the hotel to the City Hall building observation "},{"name":"Odaiba - Artificial island","map":"https://www.google.com/maps/dir/Shinjuku+Subnade+Building,+1-chōme-2+Kabukichō,+Shinjuku+City,+Tokyo+160-0021,+Japan/Odaiba,+Tokyo,+Japan/@35.6531979,139.7067381,13z/data=!3m2!4b1!5s0x6000e6e3940e4fe9:0x33a95a7d95175319!4m14!4m13!1m5!1m1!1s0x60188cd9820df8cb:0x457c9045960ddca1!2m2!1d139.7038532!2d35.6934794!1m5!1m1!1s0x601889f82c55d4cb:0x79fe8b211d2010b9!2m2!1d139.7805445!2d35.6205834!3e3?entry=ttu&g_ep=EgoyMDI2MDcwOC4wIKXMDSoASAFQAw%3D%3D","notes":"TeamLab Planets - Walking on the water.\nTransit by the train - Yurikamome."}]},{"date":"2026-09-01","loc":"Tokyo — Departure","hotel":"La'gent Hotel Shinjuku Kabukicho","address":"Tokyo, Shinjuku-ku, Kabuki-cho 2-40-5 · Price: 5,589 ILS","book":"https://secure.booking.com/confirmation.en-us.html?label=gen173nr-10CAEoggI46AdIM1gEaGqIAQGYATO4AQfIAQ3YAQPoAQH4AQGIAgGoAgG4AuqRic8GwAIB0gIkYzA4Y2RiOGQtMTQwNC00OWI4LWE0YjMtZTllYmI5ZTk0OTk42AIB4AIB&sid=7e2caf3af80e1f99dc8f2b90bc06cc74&aid=304142&auth_key=BzUCoO0IRlXaeEK3&source=mytrips","map":"https://www.google.com/maps/place/La'gent+Hotel+Shinjuku+Kabukicho/@35.6974866,139.6994319,17z/data=!4m11!3m10!1s0x60188cd7f78c260b:0x74f6bfcba5cb805a!5m4!1s2026-08-09!2i3!4m1!1i2!8m2!3d35.6974823!4d139.7020068!16s%2Fg%2F11fk2gf2c5","restaurants":"","distance":"Tokyo → airport ≈ 80 km","train":"Airport transfer","placeList":[{"name":"Checkout","map":""},{"name":"travel to airport","map":""},{"name":"fly home","map":""}]}]}</script>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.2/Sortable.min.js"></script>
+<script>
+const KEY = 'japanTrip_aug2026_v5';
+const pad = n => String(n).padStart(2,'0');
+
+/* Real itinerary: 11 Aug – 1 Sep 2026, with hotels */
+/* Itinerary seed is embedded in the #tripSeed JSON block below the markup,
+   so exporting a fresh index.html can bake current edits back into the file. */
+function readSeed(){
+  try{ const o=JSON.parse(document.getElementById('tripSeed').textContent);
+    if(Array.isArray(o)) return {savedAt:0, days:o};
+    return {savedAt: o.savedAt||0, days: o.days||[]};
+  }catch(e){ return {savedAt:0, days:[]}; }
+}
+const SEED = readSeed();
+const SAMPLE = SEED.days;
+
+let data = load();
+data.forEach(migratePlaces);
+let viewYear, viewMonth, currentIso = null;
+let viewMode = 'calendar';   // 'calendar' | 'agenda'
+
+function load(){
+  // Prefer the browser's own saved edits, UNLESS the committed file's embedded
+  // seed is newer (i.e. you edited on your computer and committed a fresh index.html).
+  let ls=null;
+  try{ const s=localStorage.getItem(KEY); if(s) ls=JSON.parse(s); }catch(e){}
+  const seedTime = SEED.savedAt||0;
+  if(ls && Array.isArray(ls.days) && (ls.savedAt||0) >= seedTime) return ls.days;
+  // Seed wins: adopt it as the working copy so later edits build on top of it.
+  const days = JSON.parse(JSON.stringify(SAMPLE));
+  try{ localStorage.setItem(KEY, JSON.stringify({savedAt: seedTime, days})); }catch(e){}
+  return days;
+}
+function save(){
+  try{ localStorage.setItem(KEY, JSON.stringify({savedAt: Date.now(), days: data})); flash(); }
+  catch(e){ alert('Could not save (private browsing can block storage).'); }
+}
+let flashT;
+function flash(){ const f=document.getElementById('flash'); f.classList.add('show');
+  clearTimeout(flashT); flashT=setTimeout(()=>f.classList.remove('show'),900); }
+
+function initView(){
+  const first = data.find(d=>d.date);
+  if(first){ const dt=new Date(first.date+'T00:00:00'); viewYear=dt.getFullYear(); viewMonth=dt.getMonth(); }
+  else { viewYear=2026; viewMonth=7; }
+}
+function backToTrip(){ initView(); render(); }
+function jumpToday(){
+  const todayIso=new Date().toISOString().slice(0,10);
+  const dt=new Date(todayIso+'T00:00:00');
+  viewYear=dt.getFullYear(); viewMonth=dt.getMonth();
+  render();
+  if(tripIndex(todayIso)>-1) openDetail(todayIso);
+}
+function changeMonth(delta){
+  viewMonth+=delta;
+  if(viewMonth<0){viewMonth=11; viewYear--;}
+  if(viewMonth>11){viewMonth=0; viewYear++;}
+  render();
+}
+
+/* ---- View mode (calendar <-> agenda list) ---- */
+function render(){ viewMode==='agenda' ? renderAgenda() : renderCal(); }
+function toggleView(){
+  viewMode = viewMode==='calendar' ? 'agenda' : 'calendar';
+  try{ localStorage.setItem('japanTrip_view', viewMode); }catch(e){}
+  applyViewChrome();
+  render();
+}
+function applyViewChrome(){
+  const cal=document.getElementById('calView');
+  const ag=document.getElementById('agendaView');
+  const legend=document.getElementById('legend');
+  const isAgenda = viewMode==='agenda';
+  cal.style.display = isAgenda ? 'none' : '';
+  ag.style.display  = isAgenda ? 'flex' : 'none';
+  legend.style.display = isAgenda ? 'none' : '';
+  // month arrows are calendar-only; hide them in agenda (whole trip is listed)
+  document.getElementById('prevBtn').style.visibility = isAgenda ? 'hidden' : '';
+  document.getElementById('nextBtn').style.visibility = isAgenda ? 'hidden' : '';
+  document.getElementById('viewToggle').textContent = isAgenda ? '📅' : '☰';
+  document.getElementById('viewToggle').title = isAgenda ? 'Calendar view' : 'List view';
+  document.getElementById('headerSub').textContent = isAgenda
+    ? '🗾 22-Day Japan Trip · tap a day to open & edit'
+    : '🗾 22-Day Japan Trip · tap a red day to open & edit its details';
+}
+
+function renderAgenda(){
+  document.getElementById('monthTitle').textContent = 'Full Itinerary';
+  const wrap=document.getElementById('agendaView');
+  const todayIso=new Date().toISOString().slice(0,10);
+  const order=[...data.keys()].sort((a,b)=>(data[a].date||'').localeCompare(data[b].date||''));
+  const stays=computeStays();
+  wrap.innerHTML = order.map(idx=>{
+    const d=data[idx];
+    const dt = d.date ? new Date(d.date+'T00:00:00') : null;
+    const dateStr = dt ? dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}) : '—';
+    const st=stays[idx];
+    const hotelTag = d.hotel ? (st?`🏨 ${st.night}/${st.total}n`:'🏨'):'';
+    const hasPlaces=(Array.isArray(d.placeList)&&d.placeList.some(p=>p.name&&p.name.trim()));
+    const icons=`${hotelTag}${hasPlaces?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}`.trim();
+    const isToday = d.date===todayIso;
+    return `<div class="agenda-card${isToday?' today':''}" onclick="openDetail('${d.date}')">
+      <div class="a-top">
+        <span class="a-day">DAY ${idx+1}</span>
+        <span class="a-date">${dateStr}</span>
+      </div>
+      <div class="a-loc">${escapeHtml(d.loc||'—')}</div>
+      ${d.hotel?`<div class="a-hotel">🏨 ${escapeHtml(d.hotel)}</div>`:''}
+      ${icons?`<div class="a-icons">${icons}</div>`:''}
+      <span class="a-chevron">›</span>
+    </div>`;
+  }).join('');
+}
+
+/* ---- Dark mode ---- */
+function applyTheme(t){
+  document.documentElement.setAttribute('data-theme', t);
+  const meta=document.querySelector('meta[name="theme-color"]');
+  if(meta) meta.setAttribute('content', t==='dark' ? '#991b1b' : '#b91c1c');
+  const btn=document.getElementById('themeToggle');
+  if(btn){ btn.textContent = t==='dark' ? '☀️' : '🌙'; btn.title = t==='dark'?'Light mode':'Dark mode'; }
+}
+function toggleTheme(){
+  const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+  const next=cur==='dark'?'light':'dark';
+  applyTheme(next);
+  try{ localStorage.setItem('japanTrip_theme', next); }catch(e){}
+}
+
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const tripIndex = iso => data.findIndex(d=>d.date===iso);
+
+/* ---- Nights-per-hotel calculation ----
+   Groups consecutive calendar days that share the same (trimmed) hotel name
+   into a single "stay" and returns, for every row in `data`, its position
+   within that stay: {night: 1-based index, total: length of the stay}. */
+function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+function computeStays(){
+  const stays = new Array(data.length).fill(null);
+  let i=0;
+  while(i<data.length){
+    const hotel=(data[i].hotel||'').trim();
+    let j=i;
+    while(hotel && j+1<data.length
+      && (data[j+1].hotel||'').trim()===hotel
+      && daysBetween(data[j].date,data[j+1].date)===1){
+      j++;
+    }
+    if(hotel){ const total=j-i+1; for(let k=i;k<=j;k++) stays[k]={night:k-i+1,total}; }
+    i=j+1;
+  }
+  return stays;
+}
+
+function renderCal(){
+  document.getElementById('monthTitle').textContent = MONTHS[viewMonth]+' '+viewYear;
+  const grid=document.getElementById('grid'); grid.innerHTML='';
+  const firstDay=new Date(viewYear,viewMonth,1).getDay();
+  const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
+  const todayIso=new Date().toISOString().slice(0,10);
+
+  for(let b=0;b<firstDay;b++){ const c=document.createElement('div'); c.className='cell blank'; grid.appendChild(c); }
+
+  const stays=computeStays();
+
+  for(let day=1;day<=daysInMonth;day++){
+    const iso=`${viewYear}-${pad(viewMonth+1)}-${pad(day)}`;
+    const idx=tripIndex(iso);
+    const c=document.createElement('div');
+    c.className='cell';
+    if(iso===todayIso) c.classList.add('today');
+    if(idx>-1){
+      const d=data[idx];
+      const st=stays[idx];
+      const hotelTag = d.hotel ? (st? `🏨 ${st.night}/${st.total}n` : '🏨') : '';
+      c.classList.add('trip');
+      const hasPlaces = (Array.isArray(d.placeList) && d.placeList.some(p=>p.name&&p.name.trim())) || (d.places&&d.places.trim());
+      c.innerHTML=`<div class="dnum">${day}</div>
+        <div class="badge">D${idx+1}</div>
+        <div class="loc">${escapeHtml(d.loc)}</div>
+        <div class="icons">${hotelTag}${hasPlaces?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}</div>`;
+      c.onclick=()=>openDetail(iso);
+    } else {
+      c.classList.add('empty-inmonth');
+      c.innerHTML=`<div class="dnum">${day}</div><div class="add-plus">＋</div>`;
+      c.onclick=()=>addOnDate(iso);
+    }
+    grid.appendChild(c);
+  }
+}
+
+function addOnDate(iso){
+  data.push({date:iso, loc:"New day", hotel:"", address:"", book:"", map:"", restaurants:"", placeList:[], distance:"", train:""});
+  data.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
+  save(); render(); openDetail(iso);
+}
+
+/* ---- Detail sheet ---- */
+function openDetail(iso){
+  currentIso=iso;
+  const idx=tripIndex(iso); if(idx<0) return;
+  const d=data[idx];
+  const dt=new Date(iso+'T00:00:00');
+  document.getElementById('dTitle').textContent='Day '+(idx+1);
+  document.getElementById('dDate').textContent=dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('fDate').value=d.date||'';
+  document.getElementById('fLoc').value=d.loc||'';
+  document.getElementById('fHotel').value=d.hotel||'';
+  const st=computeStays()[idx];
+  document.getElementById('fNights').textContent = (d.hotel && st) ? `🌙 Night ${st.night} of ${st.total} at this hotel` : '';
+  document.getElementById('fAddr').value=d.address||'';
+  document.getElementById('fBook').value=d.book||'';
+  document.getElementById('fMap').value=d.map||'';
+  document.getElementById('fRest').value=d.restaurants||'';
+  renderPlaces(idx);
+  document.getElementById('fDist').value=d.distance||'';
+  document.getElementById('fTrain').value=d.train||'';
+  document.getElementById('detailOverlay').classList.add('show');
+}
+function closeDetail(){ document.getElementById('detailOverlay').classList.remove("show"); render(); }
+
+/* ---- Places to visit: repeatable {name, map} rows ----
+   Legacy days stored places as one ';'-separated string; migrate that into
+   structured rows the first time a day is opened, so nothing is lost. */
+function migratePlaces(d){
+  if(!Array.isArray(d.placeList)){
+    const rows=[];
+    if(typeof d.places==='string' && d.places.trim()){
+      d.places.split(';').map(s=>s.trim()).filter(Boolean).forEach(name=>rows.push({name, map:''}));
+    }
+    d.placeList=rows;
+  }
+  delete d.places; // single source of truth now
+}
+function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderPlaces(idx){
+  const d=data[idx]; migratePlaces(d);
+  const wrap=document.getElementById('placesList');
+  if(!d.placeList.length){
+    wrap.innerHTML='<div class="places-empty">No places yet — tap “＋ Add place”.</div>';
+    if(placesSortable){ placesSortable.destroy(); placesSortable=null; }
+    return;
+  }
+  wrap.innerHTML=d.placeList.map((p,i)=>{
+    const hasMap=!!(p.map&&p.map.trim());
+    return `<div class="place-card" data-i="${i}">
+      <div class="place-row">
+        <span class="p-handle" title="Drag to reorder">⠿</span>
+        <input class="p-name" placeholder="Place name" value="${escAttr(p.name)}"
+          oninput="updatePlace(${i},'name',this.value)">
+      </div>
+      <div class="place-row">
+        <input class="p-map" placeholder="Google Maps link" value="${escAttr(p.map)}"
+          oninput="updatePlace(${i},'map',this.value)">
+        <button type="button" class="p-open" ${hasMap?'':'disabled'} title="Open in Google Maps"
+          onclick="openPlaceMap(${i})">↗</button>
+        <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(${i})">✕</button>
+      </div>
+      <div class="place-row p-notes">
+        <textarea placeholder="Notes (hours, tips, tickets...)"
+          oninput="updatePlace(${i},'notes',this.value)">${escapeHtml(p.notes||'')}</textarea>
+      </div>
+    </div>`;
+  }).join('');
+
+  if(placesSortable) placesSortable.destroy();
+  if(window.Sortable){
+    placesSortable = new Sortable(wrap, {
+      handle:'.p-handle',
+      animation:150,
+      delay:80, delayOnTouchOnly:true,
+      onEnd:function(evt){
+        if(evt.oldIndex===evt.newIndex) return;
+        const idx2=tripIndex(currentIso); if(idx2<0) return;
+        const arr=data[idx2].placeList;
+        const [moved]=arr.splice(evt.oldIndex,1);
+        arr.splice(evt.newIndex,0,moved);
+        save(); renderPlaces(idx2);
+      }
+    });
+  }
+}
+let placesSortable=null;
+function addPlaceRow(){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  data[idx].placeList.push({name:'', map:'', notes:''});
+  save(); renderPlaces(idx);
+}
+function updatePlace(i,field,val){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  if(!data[idx].placeList[i]) return;
+  data[idx].placeList[i][field]=val;
+  // keep the ↗ button enabled/disabled state in sync when the link changes
+  if(field==='map'){
+    const btn=document.querySelectorAll('#placesList .place-row')[i]?.querySelector('.p-open');
+    if(btn) btn.disabled=!val.trim();
+  }
+  save();
+}
+function delPlaceRow(i){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  migratePlaces(data[idx]);
+  data[idx].placeList.splice(i,1);
+  save(); renderPlaces(idx);
+}
+function openPlaceMap(i){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  let u=(data[idx].placeList[i]?.map||'').trim();
+  if(!u){ return; }
+  if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  window.open(u,'_blank');
+}
+
+function bindField(id,field){
+  document.getElementById(id).addEventListener('input',function(){
+    const idx=tripIndex(currentIso); if(idx<0) return;
+    data[idx][field]=this.value;
+    if(field==='date'){
+      data.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+      currentIso=this.value;
+    }
+    save();
+  });
+}
+bindField('fDate','date'); bindField('fLoc','loc'); bindField('fRest','restaurants');
+bindField('fDist','distance'); bindField('fTrain','train');
+bindField('fHotel','hotel'); bindField('fAddr','address'); bindField('fBook','book'); bindField('fMap','map');
+document.getElementById('fHotel').addEventListener('input',function(){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  const st=computeStays()[idx];
+  document.getElementById('fNights').textContent = (this.value && st) ? `🌙 Night ${st.night} of ${st.total} at this hotel` : '';
+});
+
+function openLink(id){
+  let u=document.getElementById(id).value.trim();
+  if(!u){ alert('No link saved here yet.'); return; }
+  if(!/^https?:\/\//i.test(u)) u='https://'+u;
+  window.open(u,'_blank');
+}
+
+function navDay(delta){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  const ni=idx+delta;
+  if(ni<0||ni>=data.length) return;
+  openDetail(data[ni].date);
+}
+function delCurrent(){
+  const idx=tripIndex(currentIso); if(idx<0) return;
+  if(confirm('Delete Day '+(idx+1)+'?')){ data.splice(idx,1); save(); closeDetail(); }
+}
+
+function resetData(){
+  if(confirm('Reset to the sample August itinerary? Current edits will be lost.')){
+    data=JSON.parse(JSON.stringify(SAMPLE)); save(); initView(); render();
+  }
+}
+
+/* ---- Backup / Restore ---- */
+function exportData(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='japan-trip-backup.json'; a.click();
+}
+
+/* ---- Download for Git ----
+   Produces a fresh index.html with your current edits baked into the embedded
+   seed, stamped with "now" so this committed file wins over any older browser copy.
+   Upload the downloaded file to your repo to make the edits the new default. */
+function exportHTML(){
+  save();
+  const clone = document.documentElement.cloneNode(true);
+  const seed = clone.querySelector('#tripSeed');
+  if(seed) seed.textContent = JSON.stringify({savedAt: Date.now(), days: data});
+  const g = clone.querySelector('#grid'); if(g) g.innerHTML='';            // rebuilt on load
+  const ag = clone.querySelector('#agendaView'); if(ag) ag.innerHTML='';   // rebuilt on load
+  const pa = clone.querySelector('#printArea'); if(pa) pa.innerHTML='';    // rebuilt on print
+  clone.querySelectorAll('.show').forEach(el=>el.classList.remove('show')); // no open modals
+  // strip theme attr; the exported file re-reads the saved preference on load
+  clone.removeAttribute('data-theme');
+  const html = '<!DOCTYPE html>\n' + clone.outerHTML;
+  const blob = new Blob([html], {type:'text/html'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='index.html'; a.click();
+  setTimeout(()=>alert('Downloaded index.html with your current plan baked in.\n\nUpload/commit this file to your Git repo to make these edits the default everywhere.'), 100);
+}
+/* ---- PDF export (Day 1 → last day) ----
+   Builds a plain, print-friendly summary of every day into #printArea, then
+   opens the browser's print dialog. Choosing "Save as PDF" there produces a
+   PDF of the whole trip — no extra libraries or servers needed, and it works
+   the same way on mobile (Chrome/Safari "Print" → "Save as PDF"). */
+function exportPDF(){
+  save();
+  // close any open sheet/modal so the print output is clean
+  document.getElementById('detailOverlay')?.classList.remove('show');
+  document.getElementById('aiModal')?.classList.remove('show');
+  const wrap=document.getElementById('printArea');
+  const sorted=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
+  wrap.innerHTML = `<h1 style="margin:0 0 10px;">🗾 Japan Trip · Day 1–${sorted.length}</h1>` +
+    sorted.map((d,i)=>{
+      migratePlaces(d);
+      const dt = d.date ? new Date(d.date+'T00:00:00') : null;
+      const dateStr = dt ? dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '—';
+      const placesHtml = d.placeList.filter(p=>p.name&&p.name.trim()).map(p=>`
+        <div class="pp-item">
+          <div class="pp-name">• ${escapeHtml(p.name)}</div>
+          ${p.map?.trim() ? `<div class="pp-link">${escapeHtml(p.map)}</div>`:''}
+          ${p.notes?.trim() ? `<div class="pp-notes">${escapeHtml(p.notes)}</div>`:''}
+        </div>`).join('');
+      return `<div class="print-day">
+        <h2>Day ${i+1} — ${escapeHtml(d.loc||'—')}</h2>
+        <p>${dateStr}</p>
+        ${d.hotel?.trim() ? `<p><b>Hotel:</b> ${escapeHtml(d.hotel)}${d.address?.trim()?' — '+escapeHtml(d.address):''}</p>`:''}
+        ${d.book?.trim() ? `<p><b>Booking:</b> ${escapeHtml(d.book)}</p>`:''}
+        ${d.map?.trim() ? `<p><b>Map:</b> ${escapeHtml(d.map)}</p>`:''}
+        ${d.distance?.trim() ? `<p><b>Distance:</b> ${escapeHtml(d.distance)}</p>`:''}
+        ${d.train?.trim() ? `<p><b>Train:</b> ${escapeHtml(d.train)}</p>`:''}
+        ${d.restaurants?.trim() ? `<p><b>Restaurants:</b> ${escapeHtml(d.restaurants).replace(/\n/g,'<br>')}</p>`:''}
+        ${placesHtml ? `<p><b>Places to visit:</b></p>${placesHtml}`:''}
+      </div>`;
+    }).join('');
+  window.print();
+}
+
+function importData(ev){
+  const file=ev.target.files[0]; if(!file) return;
+  const r=new FileReader();
+  r.onload=e=>{ try{ const p=JSON.parse(e.target.result);
+    if(Array.isArray(p)){ data=p; save(); initView(); render(); alert('Trip restored ✓'); }
+    else alert('That file does not look like a trip backup.');
+  }catch(err){ alert('Could not read that file.'); } };
+  r.readAsText(file); ev.target.value='';
+}
+
+/* ---- Ask AI ----
+   Opens claude.ai or gemini.google.com in a new tab with the question pre-filled.
+   You stay signed in with whatever account your browser is already logged into:
+   your Claude Pro account for Claude, your Google account for Gemini.
+   No API key, no extra cost — it just uses the sites you already pay for / have. */
+function openAI(){ document.getElementById('aiModal').classList.add('show'); document.getElementById('aiPrompt').focus(); }
+function closeAI(){ document.getElementById('aiModal').classList.remove('show'); }
+function quick(t){ const el=document.getElementById('aiPrompt'); el.value=(el.value?el.value+'\n':'')+t; el.focus(); }
+function askAI(which){
+  const q=document.getElementById('aiPrompt').value.trim();
+  if(!q){ alert('Type a question first.'); return; }
+  const url = which==='claude'
+    ? 'https://claude.ai/new?q='+encodeURIComponent(q)
+    : 'https://gemini.google.com/app?q='+encodeURIComponent(q);
+  window.open(url,'_blank'); closeAI();
+}
+
+function escapeHtml(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+document.getElementById('detailOverlay').addEventListener('click',e=>{ if(e.target.id==='detailOverlay') closeDetail(); });
+document.getElementById('aiModal').addEventListener('click',e=>{ if(e.target.id==='aiModal') closeAI(); });
+
+/* ---- Swipe left/right on the open day sheet to move between days ---- */
+(function(){
+  const sheet=document.querySelector('#detailOverlay .sheet');
+  if(!sheet) return;
+  let x0=null, y0=null, t0=0;
+  sheet.addEventListener('touchstart',e=>{
+    if(e.touches.length!==1) return;
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY; t0=Date.now();
+  },{passive:true});
+  sheet.addEventListener('touchend',e=>{
+    if(x0===null) return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-x0, dy=t.clientY-y0;
+    x0=null;
+    // horizontal, fast enough, and not a mostly-vertical scroll
+    if(Math.abs(dx)>60 && Math.abs(dx)>Math.abs(dy)*1.6 && (Date.now()-t0)<600){
+      navDay(dx<0 ? 1 : -1);   // swipe left → next day, right → previous
+    }
+  },{passive:true});
+})();
+
+/* ---- Restore saved preferences, then paint ---- */
+(function(){
+  let savedTheme='light';
+  try{ savedTheme=localStorage.getItem('japanTrip_theme')||'light'; }catch(e){}
+  applyTheme(savedTheme);
+  try{ const v=localStorage.getItem('japanTrip_view'); if(v==='agenda') viewMode='agenda'; }catch(e){}
+  applyViewChrome();
+})();
+
+initView(); render();
+</script>
+
+
+
+</body></html>

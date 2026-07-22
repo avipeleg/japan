@@ -58,13 +58,13 @@
   .cell.trip:active{transform:scale(.97);}
   .cell.empty-inmonth{cursor:pointer;}
   .cell.empty-inmonth:active{background:#f0fdfa;}
-  .cell .badge{position:absolute; top:4px; right:4px; background:var(--red); color:#fff;
+  .cell .badge{position:absolute; top:4px; inset-inline-end:4px; background:var(--red); color:#fff;
     font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px;}
   .cell .loc{margin-top:15px; font-weight:600; color:var(--ink); font-size:10.5px;
     line-height:1.2; overflow:hidden; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical;}
   .cell .icons{margin-top:auto; font-size:11px; letter-spacing:1px;}
   .cell.today{box-shadow:0 0 0 2px var(--today) inset;}
-  .add-plus{position:absolute; bottom:4px; right:6px; color:#0e7490; font-size:15px; opacity:.5;}
+  .add-plus{position:absolute; bottom:4px; inset-inline-end:6px; color:#0e7490; font-size:15px; opacity:.5;}
   .legend{display:flex; gap:14px; justify-content:center; margin-top:12px; font-size:12px; color:var(--muted);}
   .legend span{display:inline-flex; align-items:center; gap:5px;}
   .swatch{width:14px; height:14px; border-radius:4px; background:var(--trip); border:1px solid var(--trip-line);}
@@ -94,6 +94,8 @@
   .field input, .field textarea{width:100%; border:1px solid var(--line); border-radius:9px;
     padding:10px; font-size:15px; font-family:inherit; color:var(--ink); background:var(--field);}
   .field input:focus, .field textarea:focus{outline:none; border-color:var(--accent); background:var(--card);}
+  /* URLs and dates read left-to-right regardless of the app's language */
+  #fDate, #fBook, #fMap, .p-map{direction:ltr; text-align:left;}
   .field textarea{resize:vertical; min-height:64px;}
   .del-day{background:none; border:1px solid #fca5a5; color:#dc2626; border-radius:9px;
     padding:9px 14px; font-size:13px; font-weight:600; cursor:pointer; margin-top:18px;}
@@ -103,7 +105,7 @@
     padding:0 14px; font-size:13px; font-weight:700; cursor:pointer;}
   .linkbtn:active{transform:scale(.96);}
 
-  .ai-fab{position:fixed; right:16px; bottom:18px; z-index:30; background:var(--accent);
+  .ai-fab{position:fixed; inset-inline-end:16px; bottom:18px; z-index:30; background:var(--accent);
     color:#fff; border:none; border-radius:50px; padding:14px 20px; font-size:15px;
     font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);}
   .modal-bg{position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:50;
@@ -165,7 +167,7 @@
     font-weight:600; padding:8px 12px; border-radius:9px; cursor:pointer; font-size:13px;}
   .add-place:hover{background:var(--accent); color:#fff;}
   .places-empty{font-size:12.5px; color:var(--muted); padding:2px;}
-  .today-fab{position:fixed; left:16px; bottom:18px; z-index:30; background:var(--red);
+  .today-fab{position:fixed; inset-inline-start:16px; bottom:18px; z-index:30; background:var(--red);
     color:#fff; border:none; border-radius:50px; padding:14px 18px; font-size:14px;
     font-weight:700; cursor:pointer; box-shadow:0 4px 16px rgba(0,0,0,.25);}
 
@@ -183,12 +185,13 @@
   .agenda-card.today{box-shadow:0 0 0 2px var(--today) inset;}
   .agenda-card .a-top{display:flex; align-items:baseline; gap:8px;}
   .agenda-card .a-day{font-size:12px; font-weight:800; color:var(--red); letter-spacing:.3px;}
-  .agenda-card .a-date{font-size:11.5px; color:var(--muted); margin-left:auto;}
+  .agenda-card .a-date{font-size:11.5px; color:var(--muted); margin-inline-start:auto;}
   .agenda-card .a-loc{font-size:16px; font-weight:700; margin:3px 0 2px; color:var(--ink);}
   .agenda-card .a-hotel{font-size:12.5px; color:var(--muted);}
   .agenda-card .a-icons{margin-top:7px; font-size:13px; letter-spacing:2px;}
-  .agenda-card .a-chevron{position:absolute; right:12px; top:50%; transform:translateY(-50%);
+  .agenda-card .a-chevron{position:absolute; inset-inline-end:12px; top:50%; transform:translateY(-50%);
     color:var(--muted); font-size:18px;}
+  html[dir="rtl"] .agenda-card .a-chevron{transform:translateY(-50%) scaleX(-1);}
 
   /* Print / PDF output (hidden on screen, shown only when printing) */
   #printArea{display:none;}
@@ -215,6 +218,7 @@
     <button onclick="changeMonth(-1)" id="prevBtn" style="visibility: hidden;">‹</button>
     <h1 id="monthTitle">Full Itinerary</h1>
     <div class="head-actions">
+      <button class="htoggle" id="langToggle" onclick="toggleLang()" title="עברית">EN</button>
       <button class="htoggle" id="viewToggle" onclick="toggleView()" title="Calendar view">📅</button>
       <button class="htoggle" id="themeToggle" onclick="toggleTheme()" title="Light mode">☀️</button>
       <button onclick="changeMonth(1)" id="nextBtn" style="visibility: hidden;">›</button>
@@ -225,27 +229,27 @@
 
 <main>
   <div id="calView" style="display: none;">
-    <div class="weekdays">
+    <div class="weekdays" id="weekdays">
       <div>Sun</div><div>Mon</div><div>Tue</div><div>Wed</div><div>Thu</div><div>Fri</div><div>Sat</div>
     </div>
     <div class="grid" id="grid"></div>
   </div>
   <div id="agendaView" class="agenda" style="display: flex;"></div>
   <div class="legend" id="legend" style="display: none;">
-    <span><span class="swatch"></span> Trip day (tap to edit)</span>
-    <span>＋ Empty day (tap to add)</span>
+    <span><span class="swatch"></span> <span id="legendTrip">Trip day (tap to edit)</span></span>
+    <span id="legendEmpty">＋ Empty day (tap to add)</span>
   </div>
 
   <div class="toolbar">
-    <button class="tb-primary" onclick="exportHTML()">⬇️ Download for Git</button>
-    <button class="tb" onclick="exportPDF()">📄 Download PDF (whole trip)</button>
-    <button class="tb" onclick="exportData()">Backup (.json)</button>
-    <label class="tb" style="cursor:pointer;">Restore
+    <button class="tb-primary" id="btnExportHtml" onclick="exportHTML()">⬇️ Download for Git</button>
+    <button class="tb" id="btnExportPdf" onclick="exportPDF()">📄 Download PDF (whole trip)</button>
+    <button class="tb" id="btnExportJson" onclick="exportData()">Backup (.json)</button>
+    <label class="tb" style="cursor:pointer;"><span id="btnRestore">Restore</span>
       <input type="file" accept="application/json" onchange="importData(event)" style="display:none;">
     </label>
-    <button class="tb" onclick="resetData()">Reset</button>
+    <button class="tb" id="btnReset" onclick="resetData()">Reset</button>
   </div>
-  <div class="toolbar-hint">Edit your days above, then <b>Download for Git</b> → commit the new <code>index.html</code> to your repo to make it the default everywhere.<br>
+  <div class="toolbar-hint" id="toolbarHint">Edit your days above, then <b>Download for Git</b> → commit the new <code>index.html</code> to your repo to make it the default everywhere.<br>
   <b>PDF</b> opens your browser's print dialog — choose “Save as PDF” to export every day.</div>
 </main>
 
@@ -256,49 +260,49 @@
 <div class="overlay" id="detailOverlay">
   <div class="sheet">
     <div class="sheet-head">
-      <button class="nav" onclick="navDay(-1)">‹</button>
+      <button class="nav" id="navPrev" onclick="navDay(-1)">‹</button>
       <div class="title"><div class="t1" id="dTitle">Day 5</div><div class="t2" id="dDate">Saturday, 15 August 2026</div></div>
-      <button class="nav" onclick="navDay(1)">›</button>
+      <button class="nav" id="navNext" onclick="navDay(1)">›</button>
       <button class="close" onclick="closeDetail()">✕</button>
     </div>
     <div class="sheet-body">
       <div class="field">
-        <label>📅 Date</label>
+        <label><span id="lblDate">📅 Date</span></label>
         <input type="date" id="fDate">
       </div>
       <div class="field">
-        <label>📍 Location</label>
+        <label><span id="lblLoc">📍 Location</span></label>
         <input type="text" id="fLoc" placeholder="e.g. Kyoto — East">
       </div>
       <div class="field">
-        <label>🏨 Hotel</label>
+        <label><span id="lblHotel">🏨 Hotel</span></label>
         <input type="text" id="fHotel" placeholder="Hotel name">
         <div id="fNights" style="font-size:12.5px; color:var(--accent); font-weight:600; margin-top:5px;">🌙 Night 1 of 1 at this hotel</div>
       </div>
       <div class="field">
-        <label>🏠 Address</label>
+        <label><span id="lblAddr">🏠 Address</span></label>
         <input type="text" id="fAddr" placeholder="Street address">
       </div>
       <div class="field">
-        <label>🔗 Booking link</label>
+        <label><span id="lblBook">🔗 Booking link</span></label>
         <div class="linkrow">
           <input type="text" id="fBook" placeholder="https://...">
-          <button class="linkbtn" onclick="openLink('fBook')">Open ↗</button>
+          <button class="linkbtn" id="fBookOpenBtn" onclick="openLink('fBook')">Open ↗</button>
         </div>
       </div>
       <div class="field">
-        <label>🗺️ Map / directions</label>
+        <label><span id="lblMap">🗺️ Map / directions</span></label>
         <div class="linkrow">
           <input type="text" id="fMap" placeholder="https://maps.google.com/...">
-          <button class="linkbtn" onclick="openLink('fMap')">Open ↗</button>
+          <button class="linkbtn" id="fMapOpenBtn" onclick="openLink('fMap')">Open ↗</button>
         </div>
       </div>
       <div class="field">
-        <label>🍜 Restaurants</label>
+        <label><span id="lblRest">🍜 Restaurants</span></label>
         <textarea id="fRest" placeholder="Places to eat..." style="margin-top: 0px; margin-bottom: 0px; height: 76px;"></textarea>
       </div>
       <div class="field">
-        <label>🗻 Places to visit</label>
+        <label><span id="lblPlaces">🗻 Places to visit</span></label>
         <div id="placesList" class="places-list"><div class="place-card" data-i="0">
       <div class="place-row">
         <span class="p-handle" title="Drag to reorder">⠿</span>
@@ -339,43 +343,43 @@
         <textarea placeholder="Notes (hours, tips, tickets...)" oninput="updatePlace(2,'notes',this.value)"></textarea>
       </div>
     </div></div>
-        <button type="button" class="add-place" onclick="addPlaceRow()">＋ Add place</button>
+        <button type="button" class="add-place" id="btnAddPlace" onclick="addPlaceRow()">＋ Add place</button>
       </div>
       <div class="field">
-        <label>📏 Distance</label>
+        <label><span id="lblDist">📏 Distance</span></label>
         <input type="text" id="fDist" placeholder="e.g. Kyoto → Osaka ≈ 55 km">
       </div>
       <div class="field">
-        <label>🚆 Transport — train</label>
+        <label><span id="lblTrain">🚆 Transport — train</span></label>
         <input type="text" id="fTrain" placeholder="e.g. JR Special Rapid ~30 min">
       </div>
-      <button class="del-day" onclick="delCurrent()">Delete this day</button>
+      <button class="del-day" id="btnDelDay" onclick="delCurrent()">Delete this day</button>
     </div>
   </div>
 </div>
 
 <!-- Jump to today -->
-<button class="today-fab" onclick="jumpToday()">📍 Today</button>
+<button class="today-fab" id="btnToday" onclick="jumpToday()">📍 Today</button>
 
 <!-- Ask AI -->
-<button class="ai-fab" onclick="openAI()">🤖 Ask AI</button>
+<button class="ai-fab" id="btnAskAi" onclick="openAI()">🤖 Ask AI</button>
 <div class="modal-bg" id="aiModal">
   <div class="modal">
-    <h2>Ask Claude or Gemini</h2>
-    <p>Type your question, then choose an assistant. It opens in a new tab with your question ready —
+    <h2 id="aiTitle">Ask Claude or Gemini</h2>
+    <p id="aiDesc">Type your question, then choose an assistant. It opens in a new tab with your question ready —
       signed in with whichever account you're already logged into (your Claude Pro or your Google account).</p>
     <textarea id="aiPrompt" placeholder="e.g. Suggest a vegetarian dinner near Gion in Kyoto..."></textarea>
     <div class="quick">
-      <span onclick="quick('Suggest 3 great restaurants near ')">Restaurants near…</span>
-      <span onclick="quick('What are the must-see spots in ')">Must-see in…</span>
-      <span onclick="quick('Best way to travel by train from ')">Train route…</span>
-      <span onclick="quick('Give me a rainy-day plan for ')">Rainy day…</span>
+      <span id="qkRest" onclick="quick(t('quickRestVal'))">Restaurants near…</span>
+      <span id="qkSee" onclick="quick(t('quickSeeVal'))">Must-see in…</span>
+      <span id="qkTrain" onclick="quick(t('quickTrainVal'))">Train route…</span>
+      <span id="qkRain" onclick="quick(t('quickRainVal'))">Rainy day…</span>
     </div>
     <div class="ai-btns">
-      <button class="btn-claude" onclick="askAI('claude')">Ask Claude ↗</button>
-      <button class="btn-gemini" onclick="askAI('gemini')">Ask Gemini ↗</button>
+      <button class="btn-claude" id="btnAskClaude" onclick="askAI('claude')">Ask Claude ↗</button>
+      <button class="btn-gemini" id="btnAskGemini" onclick="askAI('gemini')">Ask Gemini ↗</button>
     </div>
-    <button class="btn-close" onclick="closeAI()">Cancel</button>
+    <button class="btn-close" id="btnAiCancel" onclick="closeAI()">Cancel</button>
   </div>
 </div>
 
@@ -388,6 +392,122 @@
 <script>
 const KEY = 'japanTrip_aug2026_v5';
 const pad = n => String(n).padStart(2,'0');
+
+/* ---- i18n: English / Hebrew ----
+   UI chrome strings live in I18N; trip content (loc/hotel/address/restaurants/
+   distance/train + place name/notes) is bilingual per-day, see bi()/getBi(). */
+const I18N = {
+  en: {
+    fullItinerary:'Full Itinerary', calendarView:'Calendar view', listView:'List view',
+    lightMode:'Light mode', darkMode:'Dark mode', hebrew:'עברית', english:'English',
+    subAgenda:'🗾 22-Day Japan Trip · tap a day to open & edit',
+    subCalendar:'🗾 22-Day Japan Trip · tap a red day to open & edit its details',
+    legendTrip:'Trip day (tap to edit)', legendEmpty:'＋ Empty day (tap to add)',
+    btnExportHtml:'⬇️ Download for Git', btnExportPdf:'📄 Download PDF (whole trip)',
+    btnExportJson:'Backup (.json)', btnRestore:'Restore', btnReset:'Reset',
+    toolbarHint:'Edit your days above, then <b>Download for Git</b> → commit the new <code>index.html</code> to your repo to make it the default everywhere.<br>\n  <b>PDF</b> opens your browser\'s print dialog — choose “Save as PDF” to export every day.',
+    lblDate:'📅 Date', lblLoc:'📍 Location', lblHotel:'🏨 Hotel', lblAddr:'🏠 Address',
+    lblBook:'🔗 Booking link', lblMap:'🗺️ Map / directions', lblRest:'🍜 Restaurants',
+    lblPlaces:'🗻 Places to visit', lblDist:'📏 Distance', lblTrain:'🚆 Transport — train',
+    phLoc:'e.g. Kyoto — East', phHotel:'Hotel name', phAddr:'Street address',
+    phBook:'https://...', phMap:'https://maps.google.com/...', phRest:'Places to eat...',
+    phDist:'e.g. Kyoto → Osaka ≈ 55 km', phTrain:'e.g. JR Special Rapid ~30 min',
+    openLink:'Open ↗', btnDelDay:'Delete this day', btnToday:'📍 Today', btnAskAi:'🤖 Ask AI',
+    aiTitle:'Ask Claude or Gemini',
+    aiDesc:'Type your question, then choose an assistant. It opens in a new tab with your question ready —\n      signed in with whichever account you\'re already logged into (your Claude Pro or your Google account).',
+    phAiPrompt:'e.g. Suggest a vegetarian dinner near Gion in Kyoto...',
+    quickRest:'Restaurants near…', quickSee:'Must-see in…', quickTrain:'Train route…', quickRain:'Rainy day…',
+    quickRestVal:'Suggest 3 great restaurants near ', quickSeeVal:'What are the must-see spots in ',
+    quickTrainVal:'Best way to travel by train from ', quickRainVal:'Give me a rainy-day plan for ',
+    btnAskClaude:'Ask Claude ↗', btnAskGemini:'Ask Gemini ↗', btnAiCancel:'Cancel',
+    saved:'Saved ✓', day:'Day', newDayLoc:'New day', placeName:'Place name', googleMapsLink:'Google Maps link',
+    dragReorder:'Drag to reorder', openInMaps:'Open in Google Maps', remove:'Remove',
+    placeNotes:'Notes (hours, tips, tickets...)', addPlace:'＋ Add place',
+    placesEmpty:'No places yet — tap “＋ Add place”.',
+    nightsOf:(n,total)=>`🌙 Night ${n} of ${total} at this hotel`,
+    confirmDelDay:n=>`Delete Day ${n}?`,
+    confirmReset:'Reset to the sample August itinerary? Current edits will be lost.',
+    cannotSave:'Could not save (private browsing can block storage).',
+    noLinkSaved:'No link saved here yet.',
+    exportedHtml:'Downloaded index.html with your current plan baked in.\n\nUpload/commit this file to your Git repo to make these edits the default everywhere.',
+    notABackup:'That file does not look like a trip backup.',
+    couldNotRead:'Could not read that file.',
+    tripRestored:'Trip restored ✓',
+    typeQuestionFirst:'Type a question first.',
+    printTitle:n=>`🗾 Japan Trip · Day 1–${n}`,
+    printDay:n=>`Day ${n}`,
+    printHotel:'Hotel:', printBooking:'Booking:', printMap:'Map:', printDistance:'Distance:',
+    printTrain:'Train:', printRestaurants:'Restaurants:', printPlaces:'Places to visit:',
+    weekdays:['Sun','Mon','Tue','Wed','Thu','Fri','Sat'],
+    months:['January','February','March','April','May','June','July','August','September','October','November','December'],
+    locale:'en-US',
+  },
+  he: {
+    fullItinerary:'כל המסלול', calendarView:'תצוגת לוח שנה', listView:'תצוגת רשימה',
+    lightMode:'מצב בהיר', darkMode:'מצב כהה', hebrew:'עברית', english:'English',
+    subAgenda:'🗾 טיול 22 יום ביפן · הקישו על יום כדי לפתוח ולערוך',
+    subCalendar:'🗾 טיול 22 יום ביפן · הקישו על יום אדום כדי לפתוח ולערוך פרטים',
+    legendTrip:'יום טיול (הקישו לעריכה)', legendEmpty:'＋ יום פנוי (הקישו להוספה)',
+    btnExportHtml:'⬇️ הורדה עבור Git', btnExportPdf:'📄 הורדת PDF (כל הטיול)',
+    btnExportJson:'גיבוי (.json)', btnRestore:'שחזור', btnReset:'איפוס',
+    toolbarHint:'ערכו את הימים למעלה, ואז <b>הורדה עבור Git</b> ← בצעו commit לקובץ <code>index.html</code> החדש למאגר שלכם כדי שיהיה ברירת המחדל בכל מקום.<br>\n  <b>PDF</b> פותח את דיאלוג ההדפסה של הדפדפן — בחרו “שמירה כ-PDF” כדי לייצא את כל הימים.',
+    lblDate:'📅 תאריך', lblLoc:'📍 מיקום', lblHotel:'🏨 מלון', lblAddr:'🏠 כתובת',
+    lblBook:'🔗 קישור להזמנה', lblMap:'🗺️ מפה / הוראות הגעה', lblRest:'🍜 מסעדות',
+    lblPlaces:'🗻 מקומות לביקור', lblDist:'📏 מרחק', lblTrain:'🚆 תחבורה — רכבת',
+    phLoc:'למשל: קיוטו — מזרח', phHotel:'שם המלון', phAddr:'כתובת הרחוב',
+    phBook:'https://...', phMap:'https://maps.google.com/...', phRest:'מקומות לאכול בהם...',
+    phDist:'למשל: קיוטו → אוסקה ≈ 55 ק״מ', phTrain:'למשל: רכבת JR מהירה ~30 דקות',
+    openLink:'פתיחה ↗', btnDelDay:'מחיקת יום זה', btnToday:'📍 היום', btnAskAi:'🤖 שאלו את ה-AI',
+    aiTitle:'שאלו את Claude או Gemini',
+    aiDesc:'הקלידו את השאלה שלכם, ואז בחרו עוזר. הוא ייפתח בכרטיסייה חדשה עם השאלה מוכנה —\n      מחוברים עם החשבון שאתם כבר מחוברים אליו (חשבון Claude Pro או חשבון Google שלכם).',
+    phAiPrompt:'למשל: הציעו ארוחת ערב צמחונית ליד גיון בקיוטו...',
+    quickRest:'מסעדות ליד…', quickSee:'חובה לראות ב…', quickTrain:'מסלול רכבת…', quickRain:'תוכנית ליום גשום…',
+    quickRestVal:'הציעו 3 מסעדות מעולות ליד ', quickSeeVal:'מהם האתרים שחובה לראות ב',
+    quickTrainVal:'הדרך הטובה ביותר לנסוע ברכבת מ', quickRainVal:'תנו לי תוכנית ליום גשום עבור ',
+    btnAskClaude:'שאלו את Claude ↗', btnAskGemini:'שאלו את Gemini ↗', btnAiCancel:'ביטול',
+    saved:'נשמר ✓', day:'יום', newDayLoc:'יום חדש', placeName:'שם המקום', googleMapsLink:'קישור ל-Google Maps',
+    dragReorder:'גררו לשינוי סדר', openInMaps:'פתיחה ב-Google Maps', remove:'הסרה',
+    placeNotes:'הערות (שעות פתיחה, טיפים, כרטיסים...)', addPlace:'＋ הוספת מקום',
+    placesEmpty:'עדיין אין מקומות — הקישו על “＋ הוספת מקום”.',
+    nightsOf:(n,total)=>`🌙 לילה ${n} מתוך ${total} במלון זה`,
+    confirmDelDay:n=>`למחוק את יום ${n}?`,
+    confirmReset:'לאפס למסלול הדוגמה של אוגוסט? השינויים הנוכחיים יימחקו.',
+    cannotSave:'לא ניתן היה לשמור (גלישה פרטית עשויה לחסום אחסון).',
+    noLinkSaved:'עדיין לא נשמר קישור כאן.',
+    exportedHtml:'הקובץ index.html הורד עם התוכנית הנוכחית שלכם מוטמעת בו.\n\nהעלו/בצעו commit לקובץ הזה במאגר ה-Git שלכם כדי שהשינויים יהיו ברירת המחדל בכל מקום.',
+    notABackup:'הקובץ הזה לא נראה כמו גיבוי טיול.',
+    couldNotRead:'לא ניתן היה לקרוא את הקובץ הזה.',
+    tripRestored:'הטיול שוחזר ✓',
+    typeQuestionFirst:'הקלידו שאלה קודם.',
+    printTitle:n=>`🗾 טיול ביפן · יום 1–${n}`,
+    printDay:n=>`יום ${n}`,
+    printHotel:'מלון:', printBooking:'הזמנה:', printMap:'מפה:', printDistance:'מרחק:',
+    printTrain:'רכבת:', printRestaurants:'מסעדות:', printPlaces:'מקומות לביקור:',
+    weekdays:['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'],
+    months:['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'],
+    locale:'he-IL',
+  }
+};
+let LANG='en';
+function t(key){ const v=I18N[LANG][key]; return v===undefined ? I18N.en[key] : v; }
+
+/* ---- Bilingual trip-content fields ----
+   loc/hotel/address/restaurants/distance/train (day level) and name/notes
+   (per place) are stored as {en:'...', he:'...'}; book/map links stay as
+   plain strings since a URL isn't language-dependent. */
+function bi(v){
+  if(v && typeof v==='object') return {en:v.en||'', he:v.he||''};
+  return {en:v||'', he:''};
+}
+function getBi(v,lang){
+  const o=bi(v);
+  return o[lang] || o[lang==='en'?'he':'en'] || '';
+}
+function setBi(obj,field,lang,val){
+  obj[field]=bi(obj[field]);
+  obj[field][lang]=val;
+}
+const BILINGUAL_DAY_FIELDS=['loc','hotel','address','restaurants','distance','train'];
 
 /* Real itinerary: 11 Aug – 1 Sep 2026, with hotels */
 /* Itinerary seed is embedded in the #tripSeed JSON block below the markup,
@@ -420,7 +540,7 @@ function load(){
 }
 function save(){
   try{ localStorage.setItem(KEY, JSON.stringify({savedAt: Date.now(), days: data})); flash(); }
-  catch(e){ alert('Could not save (private browsing can block storage).'); }
+  catch(e){ alert(t('cannotSave')); }
 }
 let flashT;
 function flash(){ const f=document.getElementById('flash'); f.classList.add('show');
@@ -466,14 +586,12 @@ function applyViewChrome(){
   document.getElementById('prevBtn').style.visibility = isAgenda ? 'hidden' : '';
   document.getElementById('nextBtn').style.visibility = isAgenda ? 'hidden' : '';
   document.getElementById('viewToggle').textContent = isAgenda ? '📅' : '☰';
-  document.getElementById('viewToggle').title = isAgenda ? 'Calendar view' : 'List view';
-  document.getElementById('headerSub').textContent = isAgenda
-    ? '🗾 22-Day Japan Trip · tap a day to open & edit'
-    : '🗾 22-Day Japan Trip · tap a red day to open & edit its details';
+  document.getElementById('viewToggle').title = isAgenda ? t('calendarView') : t('listView');
+  document.getElementById('headerSub').textContent = isAgenda ? t('subAgenda') : t('subCalendar');
 }
 
 function renderAgenda(){
-  document.getElementById('monthTitle').textContent = 'Full Itinerary';
+  document.getElementById('monthTitle').textContent = t('fullItinerary');
   const wrap=document.getElementById('agendaView');
   const todayIso=new Date().toISOString().slice(0,10);
   const order=[...data.keys()].sort((a,b)=>(data[a].date||'').localeCompare(data[b].date||''));
@@ -481,19 +599,20 @@ function renderAgenda(){
   wrap.innerHTML = order.map(idx=>{
     const d=data[idx];
     const dt = d.date ? new Date(d.date+'T00:00:00') : null;
-    const dateStr = dt ? dt.toLocaleDateString(undefined,{weekday:'short',month:'short',day:'numeric'}) : '—';
+    const dateStr = dt ? dt.toLocaleDateString(t('locale'),{weekday:'short',month:'short',day:'numeric'}) : '—';
     const st=stays[idx];
-    const hotelTag = d.hotel ? (st?`🏨 ${st.night}/${st.total}n`:'🏨'):'';
-    const hasPlaces=(Array.isArray(d.placeList)&&d.placeList.some(p=>p.name&&p.name.trim()));
-    const icons=`${hotelTag}${hasPlaces?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}`.trim();
+    const hotel=getBi(d.hotel,LANG), loc=getBi(d.loc,LANG), restaurants=getBi(d.restaurants,LANG), train=getBi(d.train,LANG);
+    const hotelTag = hotel ? (st?`🏨 ${st.night}/${st.total}n`:'🏨'):'';
+    const hasPlaces=(Array.isArray(d.placeList)&&d.placeList.some(p=>getBi(p.name,LANG).trim()));
+    const icons=`${hotelTag}${hasPlaces?' 🗻':''}${train?' 🚆':''}${restaurants?' 🍜':''}`.trim();
     const isToday = d.date===todayIso;
     return `<div class="agenda-card${isToday?' today':''}" onclick="openDetail('${d.date}')">
       <div class="a-top">
-        <span class="a-day">DAY ${idx+1}</span>
+        <span class="a-day">${t('day').toUpperCase()} ${idx+1}</span>
         <span class="a-date">${dateStr}</span>
       </div>
-      <div class="a-loc">${escapeHtml(d.loc||'—')}</div>
-      ${d.hotel?`<div class="a-hotel">🏨 ${escapeHtml(d.hotel)}</div>`:''}
+      <div class="a-loc">${escapeHtml(loc||'—')}</div>
+      ${hotel?`<div class="a-hotel">🏨 ${escapeHtml(hotel)}</div>`:''}
       ${icons?`<div class="a-icons">${icons}</div>`:''}
       <span class="a-chevron">›</span>
     </div>`;
@@ -501,12 +620,12 @@ function renderAgenda(){
 }
 
 /* ---- Dark mode ---- */
-function applyTheme(t){
-  document.documentElement.setAttribute('data-theme', t);
+function applyTheme(mode){
+  document.documentElement.setAttribute('data-theme', mode);
   const meta=document.querySelector('meta[name="theme-color"]');
-  if(meta) meta.setAttribute('content', t==='dark' ? '#991b1b' : '#b91c1c');
+  if(meta) meta.setAttribute('content', mode==='dark' ? '#991b1b' : '#b91c1c');
   const btn=document.getElementById('themeToggle');
-  if(btn){ btn.textContent = t==='dark' ? '☀️' : '🌙'; btn.title = t==='dark'?'Light mode':'Dark mode'; }
+  if(btn){ btn.textContent = mode==='dark' ? '☀️' : '🌙'; btn.title = mode==='dark'?t('lightMode'):t('darkMode'); }
 }
 function toggleTheme(){
   const cur=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
@@ -515,7 +634,69 @@ function toggleTheme(){
   try{ localStorage.setItem('japanTrip_theme', next); }catch(e){}
 }
 
-const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+/* ---- Language (English / Hebrew) ---- */
+function applyI18n(){
+  const rtl = LANG==='he';
+  document.documentElement.setAttribute('lang', LANG);
+  document.documentElement.setAttribute('dir', rtl?'rtl':'ltr');
+  const langBtn=document.getElementById('langToggle');
+  if(langBtn){ langBtn.textContent = rtl?'EN':'עב'; langBtn.title = rtl?t('english'):t('hebrew'); }
+  document.getElementById('viewToggle').title = viewMode==='agenda' ? t('listView') : t('calendarView');
+  const curTheme=document.documentElement.getAttribute('data-theme')==='dark'?'dark':'light';
+  document.getElementById('themeToggle').title = curTheme==='dark'?t('lightMode'):t('darkMode');
+  document.getElementById('headerSub').textContent = viewMode==='agenda' ? t('subAgenda') : t('subCalendar');
+  document.getElementById('weekdays').innerHTML = t('weekdays').map(w=>`<div>${w}</div>`).join('');
+  document.getElementById('legendTrip').textContent = t('legendTrip');
+  document.getElementById('legendEmpty').textContent = t('legendEmpty');
+  document.getElementById('btnExportHtml').textContent = t('btnExportHtml');
+  document.getElementById('btnExportPdf').textContent = t('btnExportPdf');
+  document.getElementById('btnExportJson').textContent = t('btnExportJson');
+  document.getElementById('btnRestore').textContent = t('btnRestore');
+  document.getElementById('btnReset').textContent = t('btnReset');
+  document.getElementById('toolbarHint').innerHTML = t('toolbarHint');
+  document.getElementById('lblDate').textContent = t('lblDate');
+  document.getElementById('lblLoc').textContent = t('lblLoc');
+  document.getElementById('lblHotel').textContent = t('lblHotel');
+  document.getElementById('lblAddr').textContent = t('lblAddr');
+  document.getElementById('lblBook').textContent = t('lblBook');
+  document.getElementById('lblMap').textContent = t('lblMap');
+  document.getElementById('lblRest').textContent = t('lblRest');
+  document.getElementById('lblPlaces').textContent = t('lblPlaces');
+  document.getElementById('lblDist').textContent = t('lblDist');
+  document.getElementById('lblTrain').textContent = t('lblTrain');
+  document.getElementById('fBook').placeholder = t('phBook');
+  document.getElementById('fMap').placeholder = t('phMap');
+  document.getElementById('fBookOpenBtn').textContent = t('openLink');
+  document.getElementById('fMapOpenBtn').textContent = t('openLink');
+  document.getElementById('btnDelDay').textContent = t('btnDelDay');
+  document.getElementById('btnAddPlace').textContent = t('addPlace');
+  document.getElementById('btnToday').textContent = t('btnToday');
+  document.getElementById('btnAskAi').textContent = t('btnAskAi');
+  document.getElementById('aiTitle').textContent = t('aiTitle');
+  document.getElementById('aiDesc').textContent = t('aiDesc');
+  document.getElementById('aiPrompt').placeholder = t('phAiPrompt');
+  document.getElementById('qkRest').textContent = t('quickRest');
+  document.getElementById('qkSee').textContent = t('quickSee');
+  document.getElementById('qkTrain').textContent = t('quickTrain');
+  document.getElementById('qkRain').textContent = t('quickRain');
+  document.getElementById('btnAskClaude').textContent = t('btnAskClaude');
+  document.getElementById('btnAskGemini').textContent = t('btnAskGemini');
+  document.getElementById('btnAiCancel').textContent = t('btnAiCancel');
+  document.getElementById('flash').textContent = t('saved');
+  const navPrev=document.getElementById('navPrev'), navNext=document.getElementById('navNext');
+  if(navPrev) navPrev.textContent = rtl?'›':'‹';
+  if(navNext) navNext.textContent = rtl?'‹':'›';
+  document.getElementById('prevBtn').textContent = rtl?'›':'‹';
+  document.getElementById('nextBtn').textContent = rtl?'‹':'›';
+}
+function toggleLang(){
+  LANG = LANG==='en' ? 'he' : 'en';
+  try{ localStorage.setItem('japanTrip_lang', LANG); }catch(e){}
+  applyI18n();
+  render();
+  if(document.getElementById('detailOverlay').classList.contains('show') && currentIso) openDetail(currentIso);
+}
+
 const tripIndex = iso => data.findIndex(d=>d.date===iso);
 
 /* ---- Nights-per-hotel calculation ----
@@ -523,14 +704,17 @@ const tripIndex = iso => data.findIndex(d=>d.date===iso);
    into a single "stay" and returns, for every row in `data`, its position
    within that stay: {night: 1-based index, total: length of the stay}. */
 function daysBetween(a,b){ return Math.round((new Date(b+'T00:00:00') - new Date(a+'T00:00:00'))/86400000); }
+/* Grouping key is language-independent (prefers English, falls back to Hebrew)
+   so a stay doesn't split apart just because the viewer switched language. */
+function hotelKeyOf(d){ const h=bi(d.hotel); return (h.en||h.he||'').trim(); }
 function computeStays(){
   const stays = new Array(data.length).fill(null);
   let i=0;
   while(i<data.length){
-    const hotel=(data[i].hotel||'').trim();
+    const hotel=hotelKeyOf(data[i]);
     let j=i;
     while(hotel && j+1<data.length
-      && (data[j+1].hotel||'').trim()===hotel
+      && hotelKeyOf(data[j+1])===hotel
       && daysBetween(data[j].date,data[j+1].date)===1){
       j++;
     }
@@ -541,7 +725,7 @@ function computeStays(){
 }
 
 function renderCal(){
-  document.getElementById('monthTitle').textContent = MONTHS[viewMonth]+' '+viewYear;
+  document.getElementById('monthTitle').textContent = t('months')[viewMonth]+' '+viewYear;
   const grid=document.getElementById('grid'); grid.innerHTML='';
   const firstDay=new Date(viewYear,viewMonth,1).getDay();
   const daysInMonth=new Date(viewYear,viewMonth+1,0).getDate();
@@ -560,13 +744,14 @@ function renderCal(){
     if(idx>-1){
       const d=data[idx];
       const st=stays[idx];
-      const hotelTag = d.hotel ? (st? `🏨 ${st.night}/${st.total}n` : '🏨') : '';
+      const hotel=getBi(d.hotel,LANG), loc=getBi(d.loc,LANG), train=getBi(d.train,LANG), restaurants=getBi(d.restaurants,LANG);
+      const hotelTag = hotel ? (st? `🏨 ${st.night}/${st.total}n` : '🏨') : '';
       c.classList.add('trip');
-      const hasPlaces = (Array.isArray(d.placeList) && d.placeList.some(p=>p.name&&p.name.trim())) || (d.places&&d.places.trim());
+      const hasPlaces = Array.isArray(d.placeList) && d.placeList.some(p=>getBi(p.name,LANG).trim());
       c.innerHTML=`<div class="dnum">${day}</div>
         <div class="badge">D${idx+1}</div>
-        <div class="loc">${escapeHtml(d.loc)}</div>
-        <div class="icons">${hotelTag}${hasPlaces?' 🗻':''}${d.train?' 🚆':''}${d.restaurants?' 🍜':''}</div>`;
+        <div class="loc">${escapeHtml(loc)}</div>
+        <div class="icons">${hotelTag}${hasPlaces?' 🗻':''}${train?' 🚆':''}${restaurants?' 🍜':''}</div>`;
       c.onclick=()=>openDetail(iso);
     } else {
       c.classList.add('empty-inmonth');
@@ -578,31 +763,40 @@ function renderCal(){
 }
 
 function addOnDate(iso){
-  data.push({date:iso, loc:"New day", hotel:"", address:"", book:"", map:"", restaurants:"", placeList:[], distance:"", train:""});
+  data.push({date:iso, loc:{en:I18N.en.newDayLoc, he:I18N.he.newDayLoc}, hotel:bi(''), address:bi(''), book:'', map:'', restaurants:bi(''), placeList:[], distance:bi(''), train:bi('')});
   data.sort((a,b)=> (a.date||'').localeCompare(b.date||''));
   save(); render(); openDetail(iso);
 }
 
-/* ---- Detail sheet ---- */
+/* ---- Detail sheet ----
+   Editable text fields show the CURRENT language's own value; if that's
+   empty, the OTHER language's existing text is shown as a placeholder hint
+   (not as real content) so it's obvious what still needs translating. */
+function biField(inputEl, biObj, basePlaceholder){
+  const o=bi(biObj);
+  const own=o[LANG]||'', other=o[LANG==='en'?'he':'en']||'';
+  inputEl.value = own;
+  inputEl.placeholder = own ? basePlaceholder : (other || basePlaceholder);
+}
 function openDetail(iso){
   currentIso=iso;
   const idx=tripIndex(iso); if(idx<0) return;
-  const d=data[idx];
+  const d=data[idx]; migrateLang(d);
   const dt=new Date(iso+'T00:00:00');
-  document.getElementById('dTitle').textContent='Day '+(idx+1);
-  document.getElementById('dDate').textContent=dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('dTitle').textContent=t('day')+' '+(idx+1);
+  document.getElementById('dDate').textContent=dt.toLocaleDateString(t('locale'),{weekday:'long',month:'long',day:'numeric',year:'numeric'});
   document.getElementById('fDate').value=d.date||'';
-  document.getElementById('fLoc').value=d.loc||'';
-  document.getElementById('fHotel').value=d.hotel||'';
+  biField(document.getElementById('fLoc'), d.loc, t('phLoc'));
+  biField(document.getElementById('fHotel'), d.hotel, t('phHotel'));
   const st=computeStays()[idx];
-  document.getElementById('fNights').textContent = (d.hotel && st) ? `🌙 Night ${st.night} of ${st.total} at this hotel` : '';
-  document.getElementById('fAddr').value=d.address||'';
+  document.getElementById('fNights').textContent = (hotelKeyOf(d) && st) ? t('nightsOf')(st.night,st.total) : '';
+  biField(document.getElementById('fAddr'), d.address, t('phAddr'));
   document.getElementById('fBook').value=d.book||'';
   document.getElementById('fMap').value=d.map||'';
-  document.getElementById('fRest').value=d.restaurants||'';
+  biField(document.getElementById('fRest'), d.restaurants, t('phRest'));
   renderPlaces(idx);
-  document.getElementById('fDist').value=d.distance||'';
-  document.getElementById('fTrain').value=d.train||'';
+  biField(document.getElementById('fDist'), d.distance, t('phDist'));
+  biField(document.getElementById('fTrain'), d.train, t('phTrain'));
   document.getElementById('detailOverlay').classList.add('show');
 }
 function closeDetail(){ document.getElementById('detailOverlay').classList.remove("show"); render(); }
@@ -619,6 +813,12 @@ function migratePlaces(d){
     d.placeList=rows;
   }
   delete d.places; // single source of truth now
+  migrateLang(d);
+}
+/* Normalize legacy plain-string fields into {en,he} bilingual objects. */
+function migrateLang(d){
+  BILINGUAL_DAY_FIELDS.forEach(f=>{ d[f]=bi(d[f]); });
+  (d.placeList||[]).forEach(p=>{ p.name=bi(p.name); p.notes=bi(p.notes); });
 }
 function escAttr(s){ return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
@@ -626,28 +826,31 @@ function renderPlaces(idx){
   const d=data[idx]; migratePlaces(d);
   const wrap=document.getElementById('placesList');
   if(!d.placeList.length){
-    wrap.innerHTML='<div class="places-empty">No places yet — tap “＋ Add place”.</div>';
+    wrap.innerHTML=`<div class="places-empty">${escapeHtml(t('placesEmpty'))}</div>`;
     if(placesSortable){ placesSortable.destroy(); placesSortable=null; }
     return;
   }
   wrap.innerHTML=d.placeList.map((p,i)=>{
     const hasMap=!!(p.map&&p.map.trim());
+    const nameO=bi(p.name), notesO=bi(p.notes);
+    const nameOwn=nameO[LANG]||'', nameOther=nameO[LANG==='en'?'he':'en']||'';
+    const notesOwn=notesO[LANG]||'', notesOther=notesO[LANG==='en'?'he':'en']||'';
     return `<div class="place-card" data-i="${i}">
       <div class="place-row">
-        <span class="p-handle" title="Drag to reorder">⠿</span>
-        <input class="p-name" placeholder="Place name" value="${escAttr(p.name)}"
+        <span class="p-handle" title="${escAttr(t('dragReorder'))}">⠿</span>
+        <input class="p-name" placeholder="${escAttr(nameOwn?t('placeName'):(nameOther||t('placeName')))}" value="${escAttr(nameOwn)}"
           oninput="updatePlace(${i},'name',this.value)">
       </div>
       <div class="place-row">
-        <input class="p-map" placeholder="Google Maps link" value="${escAttr(p.map)}"
+        <input class="p-map" placeholder="${escAttr(t('googleMapsLink'))}" value="${escAttr(p.map)}"
           oninput="updatePlace(${i},'map',this.value)">
-        <button type="button" class="p-open" ${hasMap?'':'disabled'} title="Open in Google Maps"
+        <button type="button" class="p-open" ${hasMap?'':'disabled'} title="${escAttr(t('openInMaps'))}"
           onclick="openPlaceMap(${i})">↗</button>
-        <button type="button" class="p-del" title="Remove" onclick="delPlaceRow(${i})">✕</button>
+        <button type="button" class="p-del" title="${escAttr(t('remove'))}" onclick="delPlaceRow(${i})">✕</button>
       </div>
       <div class="place-row p-notes">
-        <textarea placeholder="Notes (hours, tips, tickets...)"
-          oninput="updatePlace(${i},'notes',this.value)">${escapeHtml(p.notes||'')}</textarea>
+        <textarea placeholder="${escAttr(notesOwn?t('placeNotes'):(notesOther||t('placeNotes')))}"
+          oninput="updatePlace(${i},'notes',this.value)">${escapeHtml(notesOwn)}</textarea>
       </div>
     </div>`;
   }).join('');
@@ -673,14 +876,15 @@ let placesSortable=null;
 function addPlaceRow(){
   const idx=tripIndex(currentIso); if(idx<0) return;
   migratePlaces(data[idx]);
-  data[idx].placeList.push({name:'', map:'', notes:''});
+  data[idx].placeList.push({name:bi(''), map:'', notes:bi('')});
   save(); renderPlaces(idx);
 }
 function updatePlace(i,field,val){
   const idx=tripIndex(currentIso); if(idx<0) return;
   migratePlaces(data[idx]);
   if(!data[idx].placeList[i]) return;
-  data[idx].placeList[i][field]=val;
+  if(field==='map'){ data[idx].placeList[i].map=val; }
+  else { setBi(data[idx].placeList[i], field, LANG, val); }
   // keep the ↗ button enabled/disabled state in sync when the link changes
   if(field==='map'){
     const btn=document.querySelectorAll('#placesList .place-row')[i]?.querySelector('.p-open');
@@ -705,7 +909,8 @@ function openPlaceMap(i){
 function bindField(id,field){
   document.getElementById(id).addEventListener('input',function(){
     const idx=tripIndex(currentIso); if(idx<0) return;
-    data[idx][field]=this.value;
+    if(BILINGUAL_DAY_FIELDS.includes(field)) setBi(data[idx], field, LANG, this.value);
+    else data[idx][field]=this.value;
     if(field==='date'){
       data.sort((a,b)=>(a.date||'').localeCompare(b.date||''));
       currentIso=this.value;
@@ -719,12 +924,12 @@ bindField('fHotel','hotel'); bindField('fAddr','address'); bindField('fBook','bo
 document.getElementById('fHotel').addEventListener('input',function(){
   const idx=tripIndex(currentIso); if(idx<0) return;
   const st=computeStays()[idx];
-  document.getElementById('fNights').textContent = (this.value && st) ? `🌙 Night ${st.night} of ${st.total} at this hotel` : '';
+  document.getElementById('fNights').textContent = (this.value && st) ? t('nightsOf')(st.night,st.total) : '';
 });
 
 function openLink(id){
   let u=document.getElementById(id).value.trim();
-  if(!u){ alert('No link saved here yet.'); return; }
+  if(!u){ alert(t('noLinkSaved')); return; }
   if(!/^https?:\/\//i.test(u)) u='https://'+u;
   window.open(u,'_blank');
 }
@@ -737,12 +942,12 @@ function navDay(delta){
 }
 function delCurrent(){
   const idx=tripIndex(currentIso); if(idx<0) return;
-  if(confirm('Delete Day '+(idx+1)+'?')){ data.splice(idx,1); save(); closeDetail(); }
+  if(confirm(t('confirmDelDay')(idx+1))){ data.splice(idx,1); save(); closeDetail(); }
 }
 
 function resetData(){
-  if(confirm('Reset to the sample August itinerary? Current edits will be lost.')){
-    data=JSON.parse(JSON.stringify(SAMPLE)); save(); initView(); render();
+  if(confirm(t('confirmReset'))){
+    data=JSON.parse(JSON.stringify(SAMPLE)); data.forEach(migratePlaces); save(); initView(); render();
   }
 }
 
@@ -766,13 +971,14 @@ function exportHTML(){
   const ag = clone.querySelector('#agendaView'); if(ag) ag.innerHTML='';   // rebuilt on load
   const pa = clone.querySelector('#printArea'); if(pa) pa.innerHTML='';    // rebuilt on print
   clone.querySelectorAll('.show').forEach(el=>el.classList.remove('show')); // no open modals
-  // strip theme attr; the exported file re-reads the saved preference on load
+  // strip theme/lang attrs; the exported file re-reads the saved preferences on load
   clone.removeAttribute('data-theme');
+  clone.setAttribute('lang','en'); clone.setAttribute('dir','ltr');
   const html = '<!DOCTYPE html>\n' + clone.outerHTML;
   const blob = new Blob([html], {type:'text/html'});
   const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
   a.download='index.html'; a.click();
-  setTimeout(()=>alert('Downloaded index.html with your current plan baked in.\n\nUpload/commit this file to your Git repo to make these edits the default everywhere.'), 100);
+  setTimeout(()=>alert(t('exportedHtml')), 100);
 }
 /* ---- PDF export (Day 1 → last day) ----
    Builds a plain, print-friendly summary of every day into #printArea, then
@@ -786,27 +992,30 @@ function exportPDF(){
   document.getElementById('aiModal')?.classList.remove('show');
   const wrap=document.getElementById('printArea');
   const sorted=[...data].sort((a,b)=>(a.date||'').localeCompare(b.date||''));
-  wrap.innerHTML = `<h1 style="margin:0 0 10px;">🗾 Japan Trip · Day 1–${sorted.length}</h1>` +
+  wrap.setAttribute('dir', LANG==='he'?'rtl':'ltr');
+  wrap.innerHTML = `<h1 style="margin:0 0 10px;">${t('printTitle')(sorted.length)}</h1>` +
     sorted.map((d,i)=>{
       migratePlaces(d);
+      const loc=getBi(d.loc,LANG), hotel=getBi(d.hotel,LANG), address=getBi(d.address,LANG),
+            distance=getBi(d.distance,LANG), train=getBi(d.train,LANG), restaurants=getBi(d.restaurants,LANG);
       const dt = d.date ? new Date(d.date+'T00:00:00') : null;
-      const dateStr = dt ? dt.toLocaleDateString(undefined,{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '—';
-      const placesHtml = d.placeList.filter(p=>p.name&&p.name.trim()).map(p=>`
+      const dateStr = dt ? dt.toLocaleDateString(t('locale'),{weekday:'long',month:'long',day:'numeric',year:'numeric'}) : '—';
+      const placesHtml = d.placeList.filter(p=>getBi(p.name,LANG).trim()).map(p=>`
         <div class="pp-item">
-          <div class="pp-name">• ${escapeHtml(p.name)}</div>
+          <div class="pp-name">• ${escapeHtml(getBi(p.name,LANG))}</div>
           ${p.map?.trim() ? `<div class="pp-link">${escapeHtml(p.map)}</div>`:''}
-          ${p.notes?.trim() ? `<div class="pp-notes">${escapeHtml(p.notes)}</div>`:''}
+          ${getBi(p.notes,LANG).trim() ? `<div class="pp-notes">${escapeHtml(getBi(p.notes,LANG))}</div>`:''}
         </div>`).join('');
       return `<div class="print-day">
-        <h2>Day ${i+1} — ${escapeHtml(d.loc||'—')}</h2>
+        <h2>${t('printDay')(i+1)} — ${escapeHtml(loc||'—')}</h2>
         <p>${dateStr}</p>
-        ${d.hotel?.trim() ? `<p><b>Hotel:</b> ${escapeHtml(d.hotel)}${d.address?.trim()?' — '+escapeHtml(d.address):''}</p>`:''}
-        ${d.book?.trim() ? `<p><b>Booking:</b> ${escapeHtml(d.book)}</p>`:''}
-        ${d.map?.trim() ? `<p><b>Map:</b> ${escapeHtml(d.map)}</p>`:''}
-        ${d.distance?.trim() ? `<p><b>Distance:</b> ${escapeHtml(d.distance)}</p>`:''}
-        ${d.train?.trim() ? `<p><b>Train:</b> ${escapeHtml(d.train)}</p>`:''}
-        ${d.restaurants?.trim() ? `<p><b>Restaurants:</b> ${escapeHtml(d.restaurants).replace(/\n/g,'<br>')}</p>`:''}
-        ${placesHtml ? `<p><b>Places to visit:</b></p>${placesHtml}`:''}
+        ${hotel.trim() ? `<p><b>${t('printHotel')}</b> ${escapeHtml(hotel)}${address.trim()?' — '+escapeHtml(address):''}</p>`:''}
+        ${d.book?.trim() ? `<p><b>${t('printBooking')}</b> ${escapeHtml(d.book)}</p>`:''}
+        ${d.map?.trim() ? `<p><b>${t('printMap')}</b> ${escapeHtml(d.map)}</p>`:''}
+        ${distance.trim() ? `<p><b>${t('printDistance')}</b> ${escapeHtml(distance)}</p>`:''}
+        ${train.trim() ? `<p><b>${t('printTrain')}</b> ${escapeHtml(train)}</p>`:''}
+        ${restaurants.trim() ? `<p><b>${t('printRestaurants')}</b> ${escapeHtml(restaurants).replace(/\n/g,'<br>')}</p>`:''}
+        ${placesHtml ? `<p><b>${t('printPlaces')}</b></p>${placesHtml}`:''}
       </div>`;
     }).join('');
   window.print();
@@ -816,9 +1025,9 @@ function importData(ev){
   const file=ev.target.files[0]; if(!file) return;
   const r=new FileReader();
   r.onload=e=>{ try{ const p=JSON.parse(e.target.result);
-    if(Array.isArray(p)){ data=p; save(); initView(); render(); alert('Trip restored ✓'); }
-    else alert('That file does not look like a trip backup.');
-  }catch(err){ alert('Could not read that file.'); } };
+    if(Array.isArray(p)){ data=p; data.forEach(migratePlaces); save(); initView(); render(); alert(t('tripRestored')); }
+    else alert(t('notABackup'));
+  }catch(err){ alert(t('couldNotRead')); } };
   r.readAsText(file); ev.target.value='';
 }
 
@@ -829,10 +1038,10 @@ function importData(ev){
    No API key, no extra cost — it just uses the sites you already pay for / have. */
 function openAI(){ document.getElementById('aiModal').classList.add('show'); document.getElementById('aiPrompt').focus(); }
 function closeAI(){ document.getElementById('aiModal').classList.remove('show'); }
-function quick(t){ const el=document.getElementById('aiPrompt'); el.value=(el.value?el.value+'\n':'')+t; el.focus(); }
+function quick(text){ const el=document.getElementById('aiPrompt'); el.value=(el.value?el.value+'\n':'')+text; el.focus(); }
 function askAI(which){
   const q=document.getElementById('aiPrompt').value.trim();
-  if(!q){ alert('Type a question first.'); return; }
+  if(!q){ alert(t('typeQuestionFirst')); return; }
   const url = which==='claude'
     ? 'https://claude.ai/new?q='+encodeURIComponent(q)
     : 'https://gemini.google.com/app?q='+encodeURIComponent(q);
@@ -866,10 +1075,12 @@ document.getElementById('aiModal').addEventListener('click',e=>{ if(e.target.id=
 
 /* ---- Restore saved preferences, then paint ---- */
 (function(){
+  try{ const l=localStorage.getItem('japanTrip_lang'); if(l==='he'||l==='en') LANG=l; }catch(e){}
   let savedTheme='light';
   try{ savedTheme=localStorage.getItem('japanTrip_theme')||'light'; }catch(e){}
   applyTheme(savedTheme);
   try{ const v=localStorage.getItem('japanTrip_view'); if(v==='agenda') viewMode='agenda'; }catch(e){}
+  applyI18n();
   applyViewChrome();
 })();
 
